@@ -4,26 +4,76 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chaingrapplers</title>
-  <style>
-    :root {
-      color-scheme: light;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #111;
-      font-family: Arial, sans-serif;
-    }
-    img {
-      width: min(100vw, 1200px);
-      height: auto;
-      display: block;
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260428a">
 </head>
-<body>
-  <img src="./Chaingrapplers.png" alt="Chaingrapplers">
+<body class="landing-page">
+  <div class="page-bg"></div>
+  <div class="page-slash page-slash--green page-slash--top-right"></div>
+  <div class="page-slash page-slash--green page-slash--top-left"></div>
+  <div class="page-slash page-slash--orange page-slash--bottom-right"></div>
+  <div class="page-slash page-slash--yellow page-slash--bottom-left"></div>
+  <div class="page-slash page-slash--red page-slash--bottom-center"></div>
+
+  <header class="landing-topbar frame-shell">
+    <a class="landing-brand" href="index.html">
+      <img src="logo.png" alt="ChainGrapplers logo" class="landing-brand-logo">
+      <div class="landing-brand-copy">
+        <p class="eyebrow">A BJJ Card Game</p>
+        <h1>ChainGrapplers</h1>
+      </div>
+    </a>
+    <nav class="landing-nav" aria-label="Primary">
+      <a href="game.html" class="landing-nav-link" data-mobile="Demo">Play the Demo</a>
+      <a href="about.html" class="landing-nav-link" data-mobile="Game">Inside the Game</a>
+      <a href="buy.html" class="landing-nav-link" data-mobile="Buy">Buy the Physical Game</a>
+      <a href="rules.html" class="landing-nav-link" data-mobile="Rules">Rules</a>
+    </nav>
+  </header>
+
+  <main class="landing-shell">
+    <section class="landing-hero frame-shell">
+      <div class="landing-hero-copy landing-hero-copy--compact">
+        <h2>Chain attacks. Break pressure. Win the exchange.</h2>
+        <p class="landing-lead">
+          ChainGrapplers is a head-to-head card game about timing, position, and tactics.
+          The boxed game is the main event, but please try the digital demo so you can feel the system before it hits the table.
+        </p>
+      </div>
+      <div class="landing-hero-mark landing-hero-mark--compact landing-hero-mark--logo">
+        <div class="landing-logo-panel">
+          <img src="logo.png" alt="ChainGrapplers logo" class="landing-hero-logo">
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-route-grid landing-route-grid--equal" aria-label="Explore ChainGrapplers">
+      <a href="game.html" class="landing-route frame-shell">
+        <p class="eyebrow">Try it</p>
+        <h3>Play the Demo</h3>
+        <p>Test the core flow in the browser and feel how the chain system works.</p>
+      </a>
+
+      <a href="about.html" class="landing-route frame-shell">
+        <p class="eyebrow">Inside the game</p>
+        <h3>See What Drives the Pressure</h3>
+        <p>Get the quick picture of why the system feels tense, tactical, and replayable.</p>
+      </a>
+
+      <a href="buy.html" class="landing-route frame-shell">
+        <p class="eyebrow">Buy it</p>
+        <h3>Buy the Physical Game</h3>
+        <p>Learn what the boxed game is and where the real table experience belongs.</p>
+      </a>
+
+      <a href="rules.html" class="landing-route frame-shell">
+        <p class="eyebrow">Rules</p>
+        <h3>Read the Rules</h3>
+        <p>Start with the short version, then move into the exact chain and card rules.</p>
+      </a>
+    </section>
+  </main>
 </body>
 </html>

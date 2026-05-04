@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChainGrapplers Rules</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260428a">
+</head>
+<body class="info-page">
+  <div class="page-bg"></div>
+  <div class="page-slash page-slash--green page-slash--top-right"></div>
+  <div class="page-slash page-slash--green page-slash--top-left"></div>
+  <div class="page-slash page-slash--orange page-slash--bottom-right"></div>
+  <div class="page-slash page-slash--yellow page-slash--bottom-left"></div>
+  <div class="page-slash page-slash--red page-slash--bottom-center"></div>
+
+  <header class="landing-topbar frame-shell">
+    <a class="landing-brand" href="index.html">
+      <img src="logo.png" alt="ChainGrapplers logo" class="landing-brand-logo">
+      <div class="landing-brand-copy">
+        <p class="eyebrow">A BJJ Card Game</p>
+        <h1>ChainGrapplers</h1>
+      </div>
+    </a>
+    <nav class="landing-nav" aria-label="Primary">
+      <a href="game.html" class="landing-nav-link" data-mobile="Demo">Play the Demo</a>
+      <a href="about.html" class="landing-nav-link" data-mobile="Game">Inside the Game</a>
+      <a href="buy.html" class="landing-nav-link" data-mobile="Buy">Buy the Physical Game</a>
+      <a href="rules.html" class="landing-nav-link" data-mobile="Rules" aria-current="page">Rules</a>
+    </nav>
+  </header>
+
+  <main class="info-shell">
+    <section class="landing-hero frame-shell">
+      <div class="landing-hero-copy landing-hero-copy--compact">
+        <p class="eyebrow">Rules</p>
+        <h2>Learn the game fast, then check the full rules.</h2>
+        <p class="landing-lead">
+          Start with the short version, then move into the exact chain logic, submission pressure,
+          and special card effects.
+        </p>
+      </div>
+      <div class="landing-hero-mark landing-hero-mark--compact landing-hero-mark--logo">
+        <div class="landing-logo-panel">
+          <img src="logo.png" alt="ChainGrapplers logo" class="landing-hero-logo">
+        </div>
+      </div>
+    </section>
+
+    <section class="info-grid info-grid--two">
+      <article class="info-section frame-shell">
+        <p class="eyebrow">Quick Rules</p>
+        <h3>What you are trying to do</h3>
+        <p>ChainGrapplers is a two-player duel. Build stronger sequences than your opponent, create submission pressure, and leave them with bad options.</p>
+        <ol class="info-steps">
+          <li>Each player starts with 6 cards.</li>
+          <li>The round opens with <strong>Takedown</strong>.</li>
+          <li>On your turn, you may play up to 2 cards.</li>
+          <li>Most cards follow the chain. Your card's <strong>Start color</strong> (top) must match the current card's <strong>Result color</strong> (bottom).</li>
+          <li>If a player plays an offensive card, the opponent must answer with a defensive card that matches the color.</li>
+          <li>At the end of your turn, you may draw 1 card (if you are not holding <strong>Fatigue</strong>, which prevents you from drawing new cards).</li>
+          <li>If a submission is active, the defender must answer it with an escape or lose immediately.</li>
+        </ol>
+      </article>
+
+      <article class="info-section frame-shell">
+        <p class="eyebrow">How to Read a Card</p>
+        <h3>Top color to bottom color</h3>
+        <p>Each positional card shows a move from one position into another.</p>
+        <ul class="info-list">
+          <li><strong>Start color (top)</strong>: where the move begins.</li>
+          <li><strong>Result color (bottom)</strong>: where the move ends.</li>
+        </ul>
+        <p>Think of every normal card as a <strong>top to bottom</strong> transition.</p>
+        <ul class="info-list">
+          <li><strong>Green</strong>: the most neutral state. Momentum can swing here.</li>
+          <li><strong>Yellow</strong>: stronger pressure and stronger control.</li>
+          <li><strong>Orange</strong>: major advantage and high finishing pressure.</li>
+          <li><strong>Red</strong>: submission threat or submission escape.</li>
+          <li><strong>Defensive cards</strong> pull the exchange back toward near-neutral half guard.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="info-section frame-shell">
+      <p class="eyebrow">Visual Guide</p>
+      <h3>How the chain works</h3>
+      <div class="rule-chain-demo">
+        <img src="cards/1-takedown.jpg" alt="Takedown card" class="rule-chain-card rule-chain-card--1">
+        <img src="cards/defence-yellow-green1.jpg" alt="Yellow to green defensive card" class="rule-chain-card rule-chain-card--2">
+        <img src="cards/offense-green-orange1.jpg" alt="Green to orange offensive card" class="rule-chain-card rule-chain-card--3">
+        <img src="cards/offense-orange-red1.jpg" alt="Orange to red offensive card" class="rule-chain-card rule-chain-card--4">
+        <img src="cards/defence-red-green1.jpg" alt="Red to green escape card" class="rule-chain-card rule-chain-card--5">
+        <div class="rule-chain-note rule-chain-note--1">
+          <p><strong>Player 1</strong> starts each match with the <strong>Takedown</strong> card.</p>
+        </div>
+        <div class="rule-chain-note rule-chain-note--2">
+          <p><strong>Player 2</strong> needs a <strong>defensive</strong> response.</p>
+        </div>
+        <div class="rule-chain-note rule-chain-note--3">
+          <p><strong>Defensive cards</strong> always end on <strong>green</strong>, so <strong>Player 1</strong> can attack again with a green-start card.</p>
+        </div>
+        <div class="rule-chain-note rule-chain-note--4">
+          <p><strong>Player 1</strong> can continue the attack with a second offensive card because the chain now ends on <strong>orange</strong>.</p>
+        </div>
+        <div class="rule-chain-note rule-chain-note--5">
+          <p><strong>Player 2</strong> must answer the red submission threat with an <strong>escape card</strong> or lose immediately.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-section frame-shell">
+      <p class="eyebrow">Full Rules</p>
+      <h3>Setup</h3>
+      <ul class="info-list">
+        <li>The game is for 2 players.</li>
+        <li>Shuffle the deck and deal 6 cards to each player (the <strong>Takedown</strong> card should be one of them).</li>
+        <li>One player opens the round with <strong>Takedown</strong> (must be played alone.).</li>
+      </ul>
+
+      <h3>How cards become legal</h3>
+      <ul class="info-list">
+        <li>Any defensive card is legal to play on <strong>Takedown</strong>.</li>
+        <li>After that, a card is legal when its <strong>Start color</strong> (top) matches the current card's <strong>Result color</strong> (bottom).</li>
+        <li>If a player plays an offensive card, the opponent must answer with a defensive card that matches the color.</li>
+        <li>If a player plays a defensive card, the next normal response is offense.</li>
+        <li>If an attacker still has a second legal offensive card, they may continue the attack on the same turn.</li>
+      </ul>
+
+      <h3>Turn structure</h3>
+      <ul class="info-list">
+        <li>You may play up to 2 cards on your turn.</li>
+        <li>At the end of your turn, you may draw 1 card (if you are not holding <strong>Fatigue</strong>, which prevents you from drawing new cards).</li>
+        <li>You may choose to stop and draw even if you still have a legal move.</li>
+        <li>If <strong>Fatigue</strong> is in your hand, drawing is blocked. You must either play a legal card, or end the turn without drawing.</li>
+      </ul>
+
+      <h3>Submissions</h3>
+      <ul class="info-list">
+        <li>A red offensive card creates an active submission threat.</li>
+        <li>When you are under submission, you may not draw, pass, or end turn.</li>
+        <li>You must answer with an escape.</li>
+        <li>If you cannot answer the submission, you lose immediately.</li>
+      </ul>
+    </section>
+
+    <section class="info-grid info-grid--two">
+      <article class="info-section info-section--compact-list frame-shell">
+        <p class="eyebrow">Special Cards</p>
+        <ul class="info-list">
+          <li><strong>Mat Enforcer</strong>: draw 3 cards. It counts as one played card. The chain does not change, and the card is thrown into the discard pile.</li>
+          <li><strong>Teenage Rage</strong>: play it into the chain. The next card may be any legal follow-up.</li>
+          <li><strong>The Black Belt</strong>: play it into the chain, then pick up the most recently played card, except Takedown. The next card may be any legal follow-up.</li>
+          <li><strong>Fatigue</strong>: can only be played as your first and only card of the turn. After Fatigue, the next player may play any card.</li>
+          <li><strong>Ultra Heavy</strong> cards: steal 1 random card from your opponent. The chain does not change, and the card is thrown into the discard pile.</li>
+        </ul>
+      </article>
+
+      <article class="info-section info-section--compact-list frame-shell">
+        <p class="eyebrow">Winning</p>
+        <ul class="info-list">
+          <li><strong>Submission</strong>: if your opponent cannot answer an active submission, you win.</li>
+          <li><strong>Card advantage</strong>: if the deck is exhausted and the chain can no longer continue, the player with fewer cards left wins.</li>
+          <li><strong>Draw</strong>: if both players are equally stuck, the round is a draw.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
