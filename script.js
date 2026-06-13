@@ -1,5 +1,15 @@
 const OFF_CHAIN_SPECIALS = new Set([50, 54, 55, 56]);
 
+function tr(key, vars = {}) {
+  return window.cgTranslate ? window.cgTranslate(key, vars) : String(key).replace(/\{(\w+)\}/g, (_, name) => {
+    return Object.prototype.hasOwnProperty.call(vars, name) ? vars[name] : `{${name}}`;
+  });
+}
+
+function displayPlayerName(name) {
+  return tr(name);
+}
+
 const POSITION_LABELS = {
   takedown: "takedown",
   green: "half guard",
@@ -29,6 +39,10 @@ function inferCardColors(cardId) {
   if (cardId >= 41 && cardId <= 45) return { color1: "green", color2: "orange" };
   if (cardId >= 46 && cardId <= 49) return { color1: "yellow", color2: "red" };
   return { color1: "special", color2: "special" };
+}
+
+function isSubmissionEscapeCard(card) {
+  return Boolean(card && card.type === "defensive" && card.color1 === "red");
 }
 
 function normalizeCardData(cards) {
@@ -111,6 +125,7 @@ class Game {
     this.introTimers = [];
     this.lastRenderedChainLength = 0;
     this.previewAction = null;
+    this.pendingHailMaryPlayerId = null;
 
     this.bindUI();
     this.start();
@@ -146,7 +161,8 @@ class Game {
       p1Hand: document.getElementById("player-1-hand"),
       chainCards: document.getElementById("chain-cards"),
       offChainCards: document.getElementById("offchain-cards"),
-      drawPileCard: document.querySelector(".draw-pile-card")
+      drawPileCard: document.querySelector(".draw-pile-card"),
+      drawPanel: document.querySelector(".draw-panel")
     };
 
     this.ui.drawBtn.onclick = () => this.endTurnAndDrawCards();
@@ -412,7 +428,15 @@ class Game {
 
   updateDrawButtonState() {
     this.ui.drawBtn.textContent = this.getDrawButtonLabel();
+    const hailMaryActive = this.isHailMaryDrawAvailable(this.currentPlayer);
     this.ui.drawBtn.classList.toggle("is-highlighted", this.shouldHighlightDrawButton());
+    this.ui.drawBtn.classList.toggle("is-hail-mary", hailMaryActive);
+    if (this.ui.drawPanel) {
+      this.ui.drawPanel.classList.toggle("is-hail-mary", hailMaryActive);
+    }
+    if (this.ui.drawPileCard) {
+      this.ui.drawPileCard.classList.toggle("is-hail-mary", hailMaryActive);
+    }
 
     if (this.gameOver) {
       this.ui.drawBtn.disabled = true;
@@ -430,6 +454,9 @@ class Game {
 
   shouldHighlightDrawButton() {
     if (this.gameOver || this.isIntroDealing || this.currentPlayer.kind !== "human") {
+      return false;
+    }
+    if (this.isHailMaryDrawAvailable(this.currentPlayer)) {
       return false;
     }
     return this.getPlayableCards(this.currentPlayer).length === 0 && this.canUseTurnButton(this.currentPlayer);
@@ -536,6 +563,7 @@ class Game {
 
   canUseTurnButton(player) {
     return (
+      this.isHailMaryDrawAvailable(player) ||
       this.canPassAndDraw(player) ||
       (this.canEndTurnWithoutDraw(player) && !this.isSubmissionActiveForPlayer(player))
     );
@@ -547,10 +575,13 @@ class Game {
 
   getDrawButtonLabel() {
     if (this.gameOver) {
-      return "Round Over";
+      return tr("Round Over");
     }
     if (this.currentPlayer.kind === "bot") {
-      return "Bot Thinking";
+      return tr("Bot Thinking");
+    }
+    if (this.isHailMaryDrawAvailable(this.currentPlayer)) {
+      return tr("Hail Mary");
     }
     if (
       this.currentPlayer &&
@@ -558,37 +589,40 @@ class Game {
       this.cardsPlayedThisTurn > 0 &&
       !this.isSubmissionActiveForPlayer(this.currentPlayer)
     ) {
-      return "End Turn";
+      return tr("End Turn");
     }
-    return "Draw / End Turn";
+    return tr("Draw / End Turn");
   }
 
   getPrimaryStatusText() {
     if (this.gameOver) {
-      return "Round finished. Start a new match when ready.";
+      return tr("Round finished. Start a new match when ready.");
     }
     if (!this.lastPlayedCard) {
-      return "Open the round with Takedown.";
+      return tr("Open the round with Takedown.");
     }
     if (this.currentPlayer.kind === "bot") {
-      return "Bot is choosing the next link in the chain.";
+      return tr("Bot is choosing the next link in the chain.");
+    }
+    if (this.isHailMaryDrawAvailable(this.currentPlayer)) {
+      return tr("No escape in hand. Take one Hail Mary draw from the pile.");
     }
     if (this.isSubmissionActiveForPlayer(this.currentPlayer)) {
-      return "Submission is active. You must answer with an in-chain escape.";
+      return tr("Submission is active. You must answer with an in-chain escape.");
     }
     if (this.shouldHighlightDrawButton()) {
-      return "No legal cards to play. Use the highlighted button to draw and pass the turn.";
+      return tr("No legal cards to play. Use the highlighted button to draw and pass the turn.");
     }
     if (this.currentPlayer.hasCard(53) && this.cardsPlayedThisTurn === 0) {
-      return "Fatigue is in your hand. Play a legal card before you can end the turn.";
+      return tr("Fatigue is in your hand. Play a legal card before you can end the turn.");
     }
     if (this.currentPlayer.hasCard(53) && this.cardsPlayedThisTurn > 0) {
-      return "You may end the turn now, but Fatigue prevents drawing a new card.";
+      return tr("You may end the turn now, but Fatigue prevents drawing a new card.");
     }
     if (this.cardsPlayedThisTurn >= 2) {
-      return "You have used both plays this turn. End the turn to continue.";
+      return tr("You have used both plays this turn. End the turn to continue.");
     }
-    return "Play up to two legal cards, then draw to pass the turn.";
+    return tr("Play up to two legal cards, then draw to pass the turn.");
   }
 
   getExpectedMoveLabel(player = this.currentPlayer) {
@@ -621,26 +655,32 @@ class Game {
 
   getNoLegalMoveText(player = this.currentPlayer) {
     if (this.isSubmissionActiveForPlayer(player)) {
-      return "Submission active. Escape if possible!";
+      if (this.isHailMaryDrawAvailable(player)) {
+        return tr("No escape in hand. Take the Hail Mary draw.");
+      }
+      return tr("Submission active. Escape if possible!");
     }
 
     if (player && player.hasCard(53) && !this.canPassAndDraw(player) && !this.canEndTurnWithoutDraw(player)) {
-      return "Fatigue blocks drawing and you have no legal move.";
+      return tr("Fatigue blocks drawing and you have no legal move.");
     }
 
     const moveLabel = this.getExpectedMoveLabel(player);
-    const nextAction = this.canPassAndDraw(player) ? "Draw a card." : "End turn.";
+    const nextAction = this.canPassAndDraw(player) ? tr("Draw a card.") : tr("End turn.");
 
     if (moveLabel === "move") {
-      return `You have no legal move. ${nextAction}`;
+      return tr("You have no legal move. {nextAction}", { nextAction });
     }
 
-    return `You have no matching ${moveLabel}. ${nextAction}`;
+    return tr("You have no matching {moveLabel}. {nextAction}", {
+      moveLabel: tr(moveLabel),
+      nextAction
+    });
   }
 
   getCurrentTurnHelpText(player = this.currentPlayer) {
     if (!player) {
-      return "Start match.";
+      return tr("Start match.");
     }
 
     if (this.gameOver) {
@@ -648,21 +688,21 @@ class Game {
     }
 
     if (player.kind === "bot") {
-      return "Bot thinking.";
+      return tr("Bot thinking.");
     }
 
     if (!this.lastPlayedCard) {
-      return "Open with Takedown.";
+      return tr("Open with Takedown.");
     }
 
     if (this.cardsPlayedThisTurn >= 2) {
-      return "End turn.";
+      return tr("End turn.");
     }
 
     const playableCards = this.getPlayableCards(player);
 
     if (this.isSubmissionActiveForPlayer(player)) {
-      return playableCards.length > 0 ? "Play an escape card." : this.getNoLegalMoveText(player);
+      return playableCards.length > 0 ? tr("Play an escape card.") : this.getNoLegalMoveText(player);
     }
 
     if (playableCards.length === 0) {
@@ -670,27 +710,30 @@ class Game {
     }
 
     if (player.hasCard(53) && this.cardsPlayedThisTurn === 0) {
-      return "Fatigue blocks drawing. You may play a legal card.";
+      return tr("Fatigue blocks drawing. You may play a legal card.");
     }
 
     if (player.hasCard(53) && this.cardsPlayedThisTurn > 0) {
-      return "Fatigue blocks drawing. Play a legal follow-up or end turn.";
+      return tr("Fatigue blocks drawing. Play a legal follow-up or end turn.");
     }
 
     const moveLabel = this.getExpectedMoveLabel(player);
     const nextAction = this.canEndTurnWithoutDraw(player)
-      ? "or end turn."
-      : "or draw a card.";
+      ? tr("or end turn.")
+      : tr("or draw a card.");
 
     if (moveLabel === "move") {
-      return `Play a legal move ${nextAction}`;
+      return tr("Play a legal move {nextAction}", { nextAction });
     }
 
     if (moveLabel === "in-chain escape") {
-      return "Play an in-chain escape.";
+      return tr("Play an in-chain escape.");
     }
 
-    return `Play a matching ${moveLabel} ${nextAction}`;
+    return tr("Play a matching {moveLabel} {nextAction}", {
+      moveLabel: tr(moveLabel),
+      nextAction
+    });
   }
 
   getInfoText() {
@@ -698,21 +741,24 @@ class Game {
   }
 
   getCardLabel(card) {
-    if (!card) return "card";
-    if (SPECIAL_CARD_INFO[card.id]) return SPECIAL_CARD_INFO[card.id].name;
+    if (!card) return tr("card");
+    if (SPECIAL_CARD_INFO[card.id]) return tr(SPECIAL_CARD_INFO[card.id].name);
     return `${card.id}`;
   }
 
   getPositionLabel(color) {
-    return POSITION_LABELS[color] || color;
+    return tr(POSITION_LABELS[color] || color);
   }
 
   getCardTitle(card) {
     const special = SPECIAL_CARD_INFO[card.id];
-    if (special) return special.name;
-    if (card.id === 1) return "Takedown";
-    if (card.id >= 12 && card.id <= 17) return "Escape submission";
-    return `${this.getPositionLabel(card.color1)} to ${this.getPositionLabel(card.color2)}`;
+    if (special) return tr(special.name);
+    if (card.id === 1) return tr("Takedown");
+    if (card.id >= 12 && card.id <= 17) return tr("Escape submission");
+    return tr("{from} to {to}", {
+      from: this.getPositionLabel(card.color1),
+      to: this.getPositionLabel(card.color2)
+    });
   }
 
   emphasizeCardText(text, color = "special") {
@@ -720,56 +766,152 @@ class Game {
   }
 
   describePlayedCard(player, card) {
-    const actor = player.name === "You" ? "You" : player.name;
+    const actor = displayPlayerName(player.name);
     const special = SPECIAL_CARD_INFO[card.id];
 
     if (special) {
-      const cardName = this.emphasizeCardText(special.name, "special");
+      const cardName = this.emphasizeCardText(tr(special.name), "special");
+      const instruction = tr(special.instruction);
       if (special.sentence === "playedNameAnd") {
-        return `${actor} played ${cardName} and ${special.instruction}`;
+        return tr("{actor} played {cardName} and {instruction}", { actor, cardName, instruction });
       }
-      return `${actor} played ${cardName}. ${special.instruction}`;
+      return tr("{actor} played {cardName}. {instruction}", { actor, cardName, instruction });
     }
 
     const from = this.getPositionLabel(card.color1);
     const to = this.getPositionLabel(card.color2);
-    const transition = this.emphasizeCardText(`${from} to ${to}`, card.color2);
+    const transition = this.emphasizeCardText(tr("{from} to {to}", { from, to }), card.color2);
 
     if (card.id === 1) {
-      return `${actor} played ${this.emphasizeCardText("Takedown", "green")}. Opponent must play defensive.`;
+      return tr("{actor} played {cardName}. Opponent must play defensive.", {
+        actor,
+        cardName: this.emphasizeCardText(tr("Takedown"), "green")
+      });
     }
 
     if (card.id >= 12 && card.id <= 17) {
-      return `${actor} ${this.emphasizeCardText("escaped a submission", "green")}!`;
+      return tr("{actor} {escapeText}!", {
+        actor,
+        escapeText: this.emphasizeCardText(tr("escaped a submission"), "green")
+      });
     }
 
     if (card.color2 === "red") {
-      return `${actor} played ${transition}.`;
+      return tr("{actor} played {transition}.", { actor, transition });
     }
 
-    return `${actor} played ${transition}.`;
+    return tr("{actor} played {transition}.", { actor, transition });
   }
 
   getBotStateText() {
     if (this.gameOver) {
-      return "Round complete.";
+      return tr("Round complete.");
     }
     if (this.currentPlayer.kind === "bot") {
-      return "Bot is active.";
+      return tr("Bot is active.");
     }
     if (this.isSubmissionActiveForPlayer(this.players[1])) {
-      return "Bot is under submission pressure.";
+      return tr("Bot is under submission pressure.");
     }
     return "";
   }
 
   getWinMessage(player, method) {
-    const verb = player.name === "You" ? "win" : "wins";
-    return `${player.name} ${verb} by ${method}.`;
+    const verb = player.name === "You" ? tr("win") : tr("wins");
+    return tr("{player} {verb} by {method}.", {
+      player: displayPlayerName(player.name),
+      verb,
+      method: tr(method)
+    });
   }
 
   currentPlayerHasLegalResponse() {
     return this.getPlayableCards(this.currentPlayer).length > 0;
+  }
+
+  isHailMaryDrawAvailable(player = this.currentPlayer) {
+    return Boolean(
+      player &&
+      player.kind === "human" &&
+      this.pendingHailMaryPlayerId === player.id &&
+      this.isSubmissionActiveForPlayer(player) &&
+      this.deckManager.deck.length > 0 &&
+      this.getPlayableCards(player).length === 0
+    );
+  }
+
+  offerHailMaryOrFinish(attacker, defender) {
+    if (!defender || this.getPlayableCards(defender).length > 0) {
+      return false;
+    }
+
+    if (this.deckManager.deck.length > 0) {
+      this.pendingHailMaryPlayerId = defender.id;
+      const defenderIndex = this.players.findIndex(player => player.id === defender.id);
+      if (defenderIndex >= 0 && this.currentPlayer.id === attacker.id) {
+        const previousPlayerIndex = this.currentPlayerIndex;
+        this.currentPlayerIndex = defenderIndex;
+        if (previousPlayerIndex !== this.currentPlayerIndex && this.currentPlayerIndex === 0) {
+          this.turn += 1;
+        }
+        this.cardsPlayedThisTurn = 0;
+        this.playedCardIdsThisTurn = [];
+      }
+      this.log(tr("No escape in hand. Draw one Hail Mary card from the pile."));
+      if (defender.kind === "bot") {
+        setTimeout(() => {
+          if (
+            !this.gameOver &&
+            this.currentPlayer.id === defender.id &&
+            this.pendingHailMaryPlayerId === defender.id
+          ) {
+            this.resolveHailMaryDraw(defender);
+          }
+        }, 760);
+      }
+      return true;
+    }
+
+    this.finishGame(this.getWinMessage(attacker, "submission"));
+    return true;
+  }
+
+  resolveHailMaryDraw(player) {
+    const card = this.deckManager.draw();
+    if (!card) {
+      this.pendingHailMaryPlayerId = null;
+      this.finishGame(this.getWinMessage(this.opponent, "submission"));
+      return;
+    }
+
+    this.pendingHailMaryPlayerId = null;
+
+    if (isSubmissionEscapeCard(card)) {
+      this.lastPlayedCard = card;
+      this.lastPlayerId = player.id;
+      this.deckManager.discard(card);
+      this.chainHistory.push(card);
+      this.cardsPlayedThisTurn += 1;
+      this.playedCardIdsThisTurn.push(card.id);
+      this.log(tr("Hail Mary found an escape. The match continues."));
+
+      if (player.hand.length === 0) {
+        this.finishGame(this.getWinMessage(player, "empty hand"));
+        return;
+      }
+
+      this.refresh();
+      if (player.kind === "bot") {
+        this.maybeRunBotTurn();
+      }
+      return;
+    }
+
+    this.offChainDiscard.push(card);
+    this.finishGame(tr("{winner} wins by submission. Hail Mary failed: {cardTitle} was not an escape.", {
+      winner: displayPlayerName(this.opponent.name),
+      cardTitle: this.getCardTitle(card)
+    }));
   }
 
   resolveCurrentPlayerIfStuck() {
@@ -780,6 +922,10 @@ class Game {
     }
 
     if (this.isSubmissionActiveForPlayer(this.currentPlayer)) {
+      if (this.isHailMaryDrawAvailable(this.currentPlayer)) {
+        this.log(tr("No escape in hand. Draw one Hail Mary card from the pile."));
+        return false;
+      }
       this.finishGame(this.getWinMessage(this.opponent, "submission"));
       return true;
     }
@@ -795,38 +941,38 @@ class Game {
     if (!card) return false;
 
     if (this.cardsPlayedThisTurn >= 2) {
-      this.log("You can play at most 2 cards per turn.");
+      this.log(tr("You can play at most 2 cards per turn."));
       return false;
     }
 
     if (this.playedCardIdsThisTurn.includes(1)) {
-      this.log("Takedown must be played alone.");
+      this.log(tr("Takedown must be played alone."));
       return false;
     }
 
     if (card.id === 1 && this.cardsPlayedThisTurn > 0) {
-      this.log("Takedown must be played alone.");
+      this.log(tr("Takedown must be played alone."));
       return false;
     }
 
     if (this.playedCardIdsThisTurn.includes(53)) {
-      this.log("Fatigue must be played alone.");
+      this.log(tr("Fatigue must be played alone."));
       return false;
     }
 
     // Hard rule: Fatigue (53) cannot be played while defending an active submission (red).
     if (card.id === 53 && this.isSubmissionActiveForPlayer(player)) {
-      this.log("Fatigue cannot answer a submission.");
+      this.log(tr("Fatigue cannot answer a submission."));
       return false;
     }
 
     if (!this.isCardPlayable(card, player)) {
-      this.log("That card is not legal now.");
+      this.log(tr("That card is not legal now."));
       return false;
     }
 
     if (card.id === 53 && this.cardsPlayedThisTurn > 0) {
-      this.log("Fatigue must be played alone.");
+      this.log(tr("Fatigue must be played alone."));
       return false;
     }
 
@@ -868,6 +1014,9 @@ class Game {
     this.cardsPlayedThisTurn += 1;
     this.playedCardIdsThisTurn.push(card.id);
     this.log(this.describePlayedCard(player, card));
+    if (isSubmissionEscapeCard(card)) {
+      this.pendingHailMaryPlayerId = null;
+    }
 
     if (card.id === 52) {
       this.applySpecialCard(player, card);
@@ -880,8 +1029,8 @@ class Game {
 
     if (card.color2 === "red") {
       const opp = this.players.find(p => p.id !== player.id);
-      if (opp && this.getPlayableCards(opp).length === 0) {
-        this.finishGame(this.getWinMessage(player, "submission"));
+      if (this.offerHailMaryOrFinish(player, opp)) {
+        if (!this.gameOver) this.refresh();
         return true;
       }
     }
@@ -910,7 +1059,9 @@ class Game {
     if (card.specialAbility === "Steal a random card from your opponent") {
       const opp = this.players.find(p => p.id !== player.id);
       if (!opp || opp.hand.length === 0) {
-        this.log(`${player.name} played Ultra Heavy. Opponent has no cards.`);
+        this.log(tr("{player} played Ultra Heavy. Opponent has no cards.", {
+          player: displayPlayerName(player.name)
+        }));
         return;
       }
       const idx = Math.floor(Math.random() * opp.hand.length);
@@ -980,6 +1131,10 @@ class Game {
 
     if (this.lastPlayedCard && this.lastPlayedCard.color2 === "red" && this.lastPlayerId !== this.currentPlayer.id) {
       if (this.getPlayableCards(this.currentPlayer).length === 0) {
+        if (this.pendingHailMaryPlayerId === this.currentPlayer.id && this.deckManager.deck.length > 0) {
+          this.resolveHailMaryDraw(this.currentPlayer);
+          return;
+        }
         this.finishGame(this.getWinMessage(this.opponent, "submission"));
         return;
       }
@@ -1049,11 +1204,18 @@ class Game {
     const player = this.currentPlayer;
     const submissionActive = this.isSubmissionActiveForPlayer(player);
 
+    if (this.isHailMaryDrawAvailable(player)) {
+      this.resolveHailMaryDraw(player);
+      return;
+    }
+
     if (submissionActive) {
       if (this.getPlayableCards(player).length === 0 || this.cardsPlayedThisTurn >= 2) {
         this.finishGame(this.getWinMessage(this.opponent, "submission"));
       } else {
-        this.log(`${player.name} is under submission and must play an escape card.`);
+        this.log(tr("{player} is under submission and must play an escape card.", {
+          player: displayPlayerName(player.name)
+        }));
         this.refresh();
       }
       return;
@@ -1061,11 +1223,15 @@ class Game {
 
     if (player.hasCard(53)) {
       if (!this.canEndTurnWithoutDraw(player)) {
-        this.log(`${player.name} holds 53 and cannot pass/draw.`);
+        this.log(tr("{player} holds 53 and cannot pass/draw.", {
+          player: displayPlayerName(player.name)
+        }));
         this.refresh();
         return;
       }
-      this.log(`${player.name} ends the turn without drawing because of Fatigue.`);
+      this.log(tr("{player} ends the turn without drawing because of Fatigue.", {
+        player: displayPlayerName(player.name)
+      }));
     } else {
       const card = this.deckManager.draw();
       if (card) player.addCard(card);
@@ -1081,7 +1247,7 @@ class Game {
     }
 
     if (this.deckManager.deck.length === 0 && this.noMovesPossibleForAnyone()) {
-      this.finishGame("No cards left and no legal moves. Draw game.");
+      this.finishGame(tr("No cards left and no legal moves. Draw game."));
       return;
     }
 
@@ -1148,3 +1314,12 @@ function startGame() {
 }
 
 document.getElementById("start-game-btn").addEventListener("click", startGame);
+
+window.addEventListener("cg-language-change", () => {
+  if (activeGame) {
+    activeGame.refresh();
+    if (activeGame.gameOver) {
+      activeGame.ui.drawBtn.disabled = true;
+    }
+  }
+});
