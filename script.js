@@ -1223,7 +1223,7 @@ class Game {
 
     if (player.hasCard(53)) {
       if (!this.canEndTurnWithoutDraw(player)) {
-        this.log(tr("{player} holds 53 and cannot pass/draw.", {
+        this.log(tr("{player} holds Fatigue and cannot pass/draw.", {
           player: displayPlayerName(player.name)
         }));
         this.refresh();
