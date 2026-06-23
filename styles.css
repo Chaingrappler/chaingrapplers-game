@@ -1187,6 +1187,14 @@ body.info-page {
   color: rgba(245, 243, 238, 0.84);
 }
 
+.landing-lead.landing-lead--hero {
+  max-width: 760px;
+  font-size: clamp(1.35rem, 2.3vw, 2rem);
+  line-height: 1.28;
+  font-weight: 700;
+  color: rgba(245, 243, 238, 0.94);
+}
+
 .landing-actions {
   display: flex;
   flex-wrap: wrap;
