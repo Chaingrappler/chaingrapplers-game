@@ -124,6 +124,30 @@ body {
   transform: rotate(-8deg);
 }
 
+.site-footer {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 1120px);
+  margin: 1.25rem auto 1.75rem;
+  padding: 0 0.25rem;
+  color: var(--ink-soft);
+  font-weight: 700;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-footer a {
+  color: var(--yellow);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
 .app-shell {
   position: relative;
   width: max-content;
