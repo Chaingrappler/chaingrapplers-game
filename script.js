@@ -1199,6 +1199,22 @@ class Game {
     return this.players.every(p => this.getPlayableCards(p).length === 0);
   }
 
+  finishByCardAdvantage() {
+    const [playerOne, playerTwo] = this.players;
+
+    if (playerOne.hand.length < playerTwo.hand.length) {
+      this.finishGame(this.getWinMessage(playerOne, "card advantage"));
+      return;
+    }
+
+    if (playerTwo.hand.length < playerOne.hand.length) {
+      this.finishGame(this.getWinMessage(playerTwo, "card advantage"));
+      return;
+    }
+
+    this.finishGame(tr("No cards left and no legal moves. Draw game."));
+  }
+
   endTurnAndDrawCards() {
     if (this.gameOver) return;
     const player = this.currentPlayer;
@@ -1247,7 +1263,7 @@ class Game {
     }
 
     if (this.deckManager.deck.length === 0 && this.noMovesPossibleForAnyone()) {
-      this.finishGame(tr("No cards left and no legal moves. Draw game."));
+      this.finishByCardAdvantage();
       return;
     }
 
@@ -1313,13 +1329,26 @@ function startGame() {
   activeGame = new Game(normalizeCardData(cardsData), { introDealing: true });
 }
 
-document.getElementById("start-game-btn").addEventListener("click", startGame);
+if (typeof globalThis !== "undefined") {
+  globalThis.ChainGrapplersTestAPI = {
+    DeckManager,
+    Game,
+    Player,
+    inferCardColors,
+    isSubmissionEscapeCard,
+    normalizeCardData
+  };
+}
 
-window.addEventListener("cg-language-change", () => {
-  if (activeGame) {
-    activeGame.refresh();
-    if (activeGame.gameOver) {
-      activeGame.ui.drawBtn.disabled = true;
+if (typeof document !== "undefined" && typeof window !== "undefined") {
+  document.getElementById("start-game-btn").addEventListener("click", startGame);
+
+  window.addEventListener("cg-language-change", () => {
+    if (activeGame) {
+      activeGame.refresh();
+      if (activeGame.gameOver) {
+        activeGame.ui.drawBtn.disabled = true;
+      }
     }
-  }
-});
+  });
+}
