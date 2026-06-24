@@ -147,7 +147,7 @@ class Game {
       celebrationOverlay: document.getElementById("celebration-overlay"),
       celebrationMessage: document.getElementById("celebration-message"),
       celebrationConfetti: document.getElementById("celebration-confetti"),
-      celebrationCloseBtn: document.getElementById("celebration-close-btn"),
+      celebrationPlayAgainBtn: document.getElementById("celebration-play-again-btn"),
       cardPreviewOverlay: document.getElementById("card-preview-overlay"),
       cardPreviewImage: document.getElementById("card-preview-image"),
       cardPreviewPlayBtn: document.getElementById("card-preview-play-btn"),
@@ -166,7 +166,7 @@ class Game {
     };
 
     this.ui.drawBtn.onclick = () => this.endTurnAndDrawCards();
-    this.ui.celebrationCloseBtn.onclick = () => this.hideCelebration();
+    this.ui.celebrationPlayAgainBtn.onclick = () => startGame();
     if (this.ui.cardPreviewOverlay && this.ui.cardPreviewImage) {
       this.ui.cardPreviewOverlay.onclick = event => {
         if (event.target === this.ui.cardPreviewOverlay || event.target === this.ui.cardPreviewImage) {
