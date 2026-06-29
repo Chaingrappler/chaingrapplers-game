@@ -4,7 +4,17 @@ const path = require("node:path");
 const test = require("node:test");
 
 const root = path.resolve(__dirname, "..");
-const htmlFiles = fs.readdirSync(root).filter(name => name.endsWith(".html"));
+function findFiles(directory, extension) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory() && entry.name !== ".git" && entry.name !== "node_modules") {
+      return findFiles(fullPath, extension);
+    }
+    return entry.isFile() && entry.name.endsWith(extension) ? [fullPath] : [];
+  });
+}
+
+const htmlFiles = findFiles(root, ".html");
 
 function localReference(value) {
   if (
@@ -27,14 +37,14 @@ test("all local HTML links, scripts, styles and images exist", () => {
   const referencePattern = /\b(?:href|src)=["']([^"']+)["']/g;
 
   for (const htmlFile of htmlFiles) {
-    const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
+    const html = fs.readFileSync(htmlFile, "utf8");
     for (const match of html.matchAll(referencePattern)) {
       const reference = localReference(match[1]);
       if (!reference) continue;
 
-      const target = path.resolve(root, reference);
+      const target = path.resolve(path.dirname(htmlFile), reference);
       if (!target.startsWith(root) || !fs.existsSync(target)) {
-        missing.push(`${htmlFile}: ${match[1]}`);
+        missing.push(`${path.relative(root, htmlFile)}: ${match[1]}`);
       }
     }
   }
@@ -46,7 +56,16 @@ test("every public page links to the Shopify product", () => {
   const productUrl =
     "https://shop.chaingrapplers.com/products/chaingrapplers-card-game";
 
-  for (const htmlFile of ["index.html", "game.html", "about.html", "rules.html"]) {
+  for (const htmlFile of [
+    "index.html",
+    "game.html",
+    "about.html",
+    "rules.html",
+    path.join("en", "index.html"),
+    path.join("en", "game.html"),
+    path.join("en", "about.html"),
+    path.join("en", "rules.html")
+  ]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
     assert.match(html, new RegExp(productUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }

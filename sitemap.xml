@@ -14,15 +14,39 @@
   </url>
   <url>
     <loc>https://chaingrapplers.com/about.html</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/about.html" />
+  </url>
+  <url>
+    <loc>https://chaingrapplers.com/en/about.html</loc>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/about.html" />
   </url>
   <url>
     <loc>https://chaingrapplers.com/rules.html</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/rules.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/rules.html" />
+  </url>
+  <url>
+    <loc>https://chaingrapplers.com/en/rules.html</loc>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/rules.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/rules.html" />
   </url>
   <url>
     <loc>https://chaingrapplers.com/game.html</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/game.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/game.html" />
+  </url>
+  <url>
+    <loc>https://chaingrapplers.com/en/game.html</loc>
+    <lastmod>2026-06-29</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/game.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/game.html" />
   </url>
   <url>
     <loc>https://chaingrapplers.com/bjj-kortspel.html</loc>
