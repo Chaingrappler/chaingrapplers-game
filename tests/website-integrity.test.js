@@ -22,6 +22,7 @@ function localReference(value) {
     value.startsWith("#") ||
     value.startsWith("http://") ||
     value.startsWith("https://") ||
+    value.startsWith("/_vercel/") ||
     value.startsWith("mailto:") ||
     value.startsWith("data:") ||
     value.startsWith("javascript:")
@@ -68,6 +69,30 @@ test("every public page links to the Shopify product", () => {
   ]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
     assert.match(html, new RegExp(productUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
+test("every public page includes cookie-free Vercel Web Analytics", () => {
+  for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, "utf8");
+    assert.match(html, /<script defer src="\/_vercel\/insights\/script\.js"><\/script>/, path.relative(root, htmlFile));
+  }
+});
+
+test("images reserve layout space and rule cards load lazily", () => {
+  for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, "utf8");
+    for (const [tag] of html.matchAll(/<img\b[^>]*>/gi)) {
+      assert.match(tag, /\bwidth="\d+"/i, `${path.relative(root, htmlFile)}: ${tag}`);
+      assert.match(tag, /\bheight="\d+"/i, `${path.relative(root, htmlFile)}: ${tag}`);
+    }
+  }
+
+  for (const htmlFile of ["rules.html", path.join("en", "rules.html")]) {
+    const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
+    const ruleCards = [...html.matchAll(/<img\b[^>]*class="[^"]*rule-chain-card[^"]*"[^>]*>/gi)];
+    assert.equal(ruleCards.length, 5, htmlFile);
+    for (const [tag] of ruleCards) assert.match(tag, /\bloading="lazy"/i, `${htmlFile}: ${tag}`);
   }
 });
 
