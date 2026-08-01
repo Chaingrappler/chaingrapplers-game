@@ -96,6 +96,17 @@ test("images reserve layout space and rule cards load lazily", () => {
   }
 });
 
+test("rule guide cards preserve their printed proportions on mobile", () => {
+  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  const ruleCardBlock = styles.match(/\.rule-chain-card\s*\{([^}]+)\}/);
+
+  assert.ok(ruleCardBlock, "styles.css is missing .rule-chain-card");
+  assert.match(ruleCardBlock[1], /height:\s*auto\s*;/);
+  assert.match(ruleCardBlock[1], /aspect-ratio:\s*59\s*\/\s*84\s*;/);
+  assert.match(ruleCardBlock[1], /object-fit:\s*contain\s*;/);
+  assert.match(ruleCardBlock[1], /align-self:\s*start\s*;/);
+});
+
 test("all HTML pages declare Swedish as the source language", () => {
   for (const htmlFile of ["index.html", "game.html", "about.html", "rules.html"]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
