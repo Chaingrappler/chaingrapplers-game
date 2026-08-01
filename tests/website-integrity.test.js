@@ -114,6 +114,19 @@ test("all HTML pages declare Swedish as the source language", () => {
   }
 });
 
+test("the Swedish rules translation covers split inline fragments", () => {
+  const translations = fs.readFileSync(path.join(root, "i18n.js"), "utf8");
+  const requiredMappings = [
+    ['Start color (top)', 'Startfärg (överst)'],
+    ['Result color (bottom)', 'Resultatfärg (nederst)'],
+    ["(top) matches the current card's", "(överst) matchar det aktuella kortets"]
+  ];
+
+  for (const [source, target] of requiredMappings) {
+    assert.ok(translations.includes(`"${source}": "${target}"`), `missing Swedish mapping for ${source}`);
+  }
+});
+
 test("the rules page documents all tested win conditions and special cards", () => {
   const rules = fs.readFileSync(path.join(root, "rules.html"), "utf8");
   const requiredTerms = [
