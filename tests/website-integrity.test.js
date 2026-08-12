@@ -107,6 +107,19 @@ test("rule guide cards preserve their printed proportions on mobile", () => {
   assert.match(ruleCardBlock[1], /align-self:\s*start\s*;/);
 });
 
+test("enlarged card previews preserve their intrinsic proportions at every viewport", () => {
+  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  const previewImageBlock = styles.match(/\.card-preview-image\s*\{([^}]+)\}/);
+
+  assert.ok(previewImageBlock, "styles.css is missing .card-preview-image");
+  assert.match(previewImageBlock[1], /width:\s*auto\s*;/);
+  assert.match(previewImageBlock[1], /height:\s*auto\s*;/);
+  assert.match(previewImageBlock[1], /max-width:\s*min\(360px,\s*calc\(100vw\s*-\s*2\.5rem\)\)\s*;/);
+  assert.match(previewImageBlock[1], /max-height:\s*calc\(100dvh\s*-\s*8rem\)\s*;/);
+  assert.match(previewImageBlock[1], /object-fit:\s*contain\s*;/);
+  assert.doesNotMatch(previewImageBlock[1], /(?:^|\n)\s*width:\s*min\(/);
+});
+
 test("all HTML pages declare Swedish as the source language", () => {
   for (const htmlFile of ["index.html", "game.html", "about.html", "rules.html"]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
