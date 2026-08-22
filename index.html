@@ -3,27 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChainGrapplers | BJJ-kortspel för barn och vuxna</title>
-  <meta name="description" content="ChainGrapplers är ett taktiskt BJJ-kortspel för två spelare. Kedja positioner, försvara submissions och prova den kostnadsfria digitala demon.">
+  <title>ChainGrapplers | Det taktiska BJJ-kortspelet</title>
+  <meta name="description" content="ChainGrapplers är ett snabbt, taktiskt BJJ-kortspel för två spelare. Bygg kedjan, bryt pressen och avsluta matchen. 299 kr med fri frakt i Sverige.">
   <link rel="canonical" href="https://chaingrapplers.com/">
   <link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/">
   <link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/">
   <link rel="alternate" hreflang="x-default" href="https://chaingrapplers.com/">
-  <meta property="og:title" content="ChainGrapplers | Ett taktiskt BJJ-kortspel">
-  <meta property="og:description" content="Ett snabbt kortspel om positioner, press, submissions och escapes. Prova demon eller köp det fysiska spelet.">
+  <meta property="og:title" content="ChainGrapplers | Det taktiska BJJ-kortspelet">
+  <meta property="og:description" content="Bygg kedjan. Bryt pressen. Avsluta matchen. Ett snabbt kortspel för två spelare.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://chaingrapplers.com/">
   <meta property="og:image" content="https://chaingrapplers.com/Chaingrapplers.png">
   <meta property="og:locale" content="sv_SE">
   <meta property="og:locale:alternate" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ChainGrapplers | Ett taktiskt BJJ-kortspel">
-  <meta name="twitter:description" content="Kedja positioner, försvara submissions och vinn duellen.">
+  <meta name="twitter:title" content="ChainGrapplers | Det taktiska BJJ-kortspelet">
+  <meta name="twitter:description" content="Position, press och submissions — som ett snabbt kortspel för två.">
   <meta name="twitter:image" content="https://chaingrapplers.com/Chaingrapplers.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260623a">
+  <link rel="preconnect" href="https://cdn.shopify.com">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260822a">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -43,6 +44,21 @@
           "name": "ChainGrapplers",
           "inLanguage": ["sv", "en"],
           "publisher": { "@id": "https://chaingrapplers.com/#organization" }
+        },
+        {
+          "@type": "Product",
+          "name": "ChainGrapplers Card Game",
+          "description": "Ett taktiskt BJJ-kortspel för två spelare från 7 år.",
+          "image": "https://cdn.shopify.com/s/files/1/1055/0761/9146/files/chaingrapplers-package.png?v=1782127896",
+          "sku": "CG-CARD-GAME-001",
+          "brand": { "@type": "Brand", "name": "ChainGrapplers" },
+          "offers": {
+            "@type": "Offer",
+            "url": "https://shop.chaingrapplers.com/products/chaingrapplers-card-game",
+            "priceCurrency": "SEK",
+            "price": "299.00",
+            "availability": "https://schema.org/InStock"
+          }
         }
       ]
     }
@@ -50,55 +66,87 @@
   <!-- Cookie-free Vercel Web Analytics; no tracking cookies. -->
   <script defer src="/_vercel/insights/script.js"></script>
 </head>
-<body class="landing-page">
-  <div class="page-bg"></div>
-  <div class="page-slash page-slash--green page-slash--top-right"></div>
-  <div class="page-slash page-slash--green page-slash--top-left"></div>
-  <div class="page-slash page-slash--orange page-slash--bottom-right"></div>
-  <div class="page-slash page-slash--yellow page-slash--bottom-left"></div>
-  <div class="page-slash page-slash--red page-slash--bottom-center"></div>
+<body class="landing-page product-home">
+  <div class="product-page-grain" aria-hidden="true"></div>
 
-  <header class="landing-topbar frame-shell">
-    <a class="landing-brand" href="index.html">
-      <img src="logo.png" alt="ChainGrapplers logo" class="landing-brand-logo" width="1413" height="818" decoding="async">
+  <header class="landing-topbar">
+    <a class="landing-brand" href="./" aria-label="ChainGrapplers startsida">
+      <img src="logo.png" alt="ChainGrapplers logotyp" class="landing-brand-logo" width="1413" height="818" decoding="async">
       <div class="landing-brand-copy">
         <p class="eyebrow">Ett BJJ-kortspel</p>
-        <h1>ChainGrapplers</h1>
+        <span class="landing-page-brand">ChainGrapplers</span>
       </div>
     </a>
-    <nav class="landing-nav" aria-label="Primary">
-      <a href="game.html" class="landing-nav-link" data-mobile="Demo">Spela demon</a>
-      <a href="about.html" class="landing-nav-link" data-mobile="Spelet">Om spelet</a>
-      <a href="https://shop.chaingrapplers.com/products/chaingrapplers-card-game" class="landing-nav-link" data-mobile="Köp">Köp kortspelet</a>
-      <a href="rules.html" class="landing-nav-link" data-mobile="Regler">Regler</a>
-      <a href="en/" class="landing-nav-link" hreflang="en" lang="en" data-mobile="EN">English</a>
+    <nav class="landing-nav" aria-label="Huvudmeny">
+      <a href="./" class="landing-nav-link" aria-current="page"><span>Kortspelet</span><small>Produkten, priset och det viktigaste först.</small></a>
+      <a href="game.html" class="landing-nav-link"><span>Spela demon</span><small>Känn hur kortkedjan fungerar direkt i webbläsaren.</small></a>
+      <a href="rules.html" class="landing-nav-link"><span>Så spelar du</span><small>Regler, specialkort och tre sätt att avgöra matchen.</small></a>
+      <a href="about.html" class="landing-nav-link"><span>Om spelet</span><small>Positioner, press, escapes och submissions.</small></a>
+      <a href="bjj-kortspel.html" class="landing-nav-link"><span>För vem?</span><small>För barn, familjer, lagkamrater och BJJ-klubbar.</small></a>
+      <a href="https://shop.chaingrapplers.com/products/chaingrapplers-card-game" class="landing-nav-link"><span>Shopify-butiken</span><small>Se produktdetaljerna i vår säkra butik.</small></a>
+      <a href="en/" class="landing-nav-link landing-nav-link--language" hreflang="en" lang="en"><span>English</span><small>Read the site in English.</small></a>
     </nav>
   </header>
 
-  <main class="landing-shell">
-    <section class="landing-hero frame-shell">
-      <div class="landing-hero-copy landing-hero-copy--compact">
-        <p class="landing-lead landing-lead--hero">
-          ChainGrapplers är ett kortspel för två spelare om tajming, position och taktik.
-          Det fysiska spelet är huvudprodukten, men prova gärna den digitala demon för att känna hur systemet fungerar innan spelet hamnar på bordet.
-        </p>
+  <main class="product-landing">
+    <section class="product-hero" aria-labelledby="product-title">
+      <div class="product-visual">
+        <div class="product-visual__mat" aria-hidden="true">
+          <span class="product-visual__slash product-visual__slash--green"></span>
+          <span class="product-visual__slash product-visual__slash--yellow"></span>
+          <span class="product-visual__slash product-visual__slash--red"></span>
+        </div>
+        <img
+          class="product-packshot"
+          src="https://cdn.shopify.com/s/files/1/1055/0761/9146/files/chaingrapplers-package.png?v=1782127896&amp;width=900"
+          srcset="https://cdn.shopify.com/s/files/1/1055/0761/9146/files/chaingrapplers-package.png?v=1782127896&amp;width=520 520w, https://cdn.shopify.com/s/files/1/1055/0761/9146/files/chaingrapplers-package.png?v=1782127896&amp;width=900 900w"
+          sizes="(max-width: 800px) 76vw, 42vw"
+          alt="ChainGrapplers BJJ-kortspel i sin svarta spelask"
+          width="688"
+          height="1106"
+          decoding="async"
+          fetchpriority="high">
+        <p class="product-visual__caption"><span>01</span> Spelet på bordet</p>
       </div>
-      <div class="landing-hero-mark landing-hero-mark--compact landing-hero-mark--logo">
-        <div class="landing-logo-panel">
-          <img src="logo.png" alt="ChainGrapplers logo" class="landing-hero-logo" width="1413" height="818" decoding="async" fetchpriority="high">
+
+      <div class="product-copy">
+        <p class="product-kicker"><span></span>Taktiskt BJJ-kortspel</p>
+        <h1 id="product-title">Bygg kedjan.<br>Bryt pressen.<br><em>Avsluta matchen.</em></h1>
+        <p class="product-intro">ChainGrapplers gör flödet i brasiliansk jiu-jitsu till snabba kortdueller. Du behöver inte kunna BJJ — färgerna lär dig vägen från position till submission.</p>
+
+        <dl class="product-facts" aria-label="Produktinformation">
+          <div><dt>Spelare</dt><dd>2</dd></div>
+          <div><dt>Ålder</dt><dd>7+</dd></div>
+          <div><dt>Match</dt><dd>1–10 min</dd></div>
+        </dl>
+
+        <div class="product-purchase">
+          <div class="product-price"><strong>299 kr</strong><span>Fri frakt i Sverige</span></div>
+          <a
+            class="product-add-button"
+            href="https://shop.chaingrapplers.com/cart/62506751459658:1?checkout"
+            data-shopify-checkout
+            data-checkout-url="https://shop.chaingrapplers.com/cart/62506751459658:1?checkout">
+            <span>Lägg i varukorgen</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <p class="product-checkout-note"><span aria-hidden="true">●</span> Öppnar säker Shopify-kassa</p>
         </div>
       </div>
     </section>
 
-    <section class="info-section frame-shell">
-      <p class="eyebrow">För grapplers och familjer</p>
-      <h2>Letar du efter ett BJJ-kortspel eller en BJJ-present?</h2>
-      <p>Läs hur ChainGrapplers fungerar för barn, vuxna, familjer och klubbar, och varför spelet går att spela även utan tidigare BJJ-erfarenhet.</p>
-      <p><a href="bjj-kortspel.html">Läs guiden om BJJ-kortspelet</a></p>
-    </section>  </main>
-  <footer class="site-footer">
-    <p>Contact: <a href="mailto:admin@chaingrapplers.com">admin@chaingrapplers.com</a></p>
+    <section class="product-proof" aria-label="Därför ChainGrapplers">
+      <article><span>01</span><div><strong>Lätt att börja</strong><p>Matcha färgerna och bygg en kedja.</p></div></article>
+      <article><span>02</span><div><strong>Taktiskt på riktigt</strong><p>Pressa, försvara och välj när du vågar fortsätta.</p></div></article>
+      <article><span>03</span><div><strong>Gjort för omspel</strong><p>Korta matcher gör revanschen självklar.</p></div></article>
+      <p class="product-proof__link">Vill du känna flödet först? <a href="game.html">Spela den kostnadsfria demon.</a></p>
+    </section>
+  </main>
+
+  <footer class="site-footer product-footer">
+    <p>ChainGrapplers · Skickas från Sverige · <a href="mailto:admin@chaingrapplers.com">admin@chaingrapplers.com</a></p>
   </footer>
 
+  <script src="site.js?v=20260822a"></script>
 </body>
 </html>

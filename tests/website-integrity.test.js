@@ -170,3 +170,37 @@ test("the deployed card images match the card data exactly", () => {
 
   assert.deepEqual([...deployed].sort(), [...referenced].sort());
 });
+
+test("every public page uses the shared full-height menu", () => {
+  for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, "utf8");
+    const scriptPath = htmlFile.includes(`${path.sep}en${path.sep}`) ? "../site.js" : "site.js";
+    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260822a["']`), path.relative(root, htmlFile));
+  }
+
+  const menuScript = fs.readFileSync(path.join(root, "site.js"), "utf8");
+  assert.match(menuScript, /className = "site-menu-toggle"/);
+  assert.match(menuScript, /aria-controls/);
+  assert.match(menuScript, /event\.key === "Escape"/);
+});
+
+test("product landing pages use the live Shopify product and checkout cart permalink", () => {
+  const cartUrl = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
+  const productImage = "chaingrapplers-package.png";
+
+  for (const htmlFile of ["index.html", path.join("en", "index.html")]) {
+    const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
+    assert.match(html, /class="product-hero"/);
+    assert.match(html, /data-shopify-checkout/);
+    assert.ok(html.includes(cartUrl), `${htmlFile} is missing the live cart permalink`);
+    assert.ok(html.includes(productImage), `${htmlFile} is missing the live product image`);
+    assert.match(html, /299 (?:kr|SEK)/);
+  }
+});
+
+test("Shopify checkout uses a secure popup overlay with a navigation fallback", () => {
+  const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
+  assert.match(script, /window\.open\(url, "chaingrapplers-shopify-checkout"/);
+  assert.match(script, /window\.location\.assign\(url\)/);
+  assert.doesNotMatch(script, /createElement\(["']iframe["']\)/i);
+});
