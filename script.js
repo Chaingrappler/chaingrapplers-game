@@ -125,6 +125,7 @@ class Game {
     this.introTimers = [];
     this.lastRenderedChainLength = 0;
     this.previewAction = null;
+    this.previewReturnFocus = null;
     this.pendingHailMaryPlayerId = null;
 
     this.bindUI();
@@ -151,6 +152,7 @@ class Game {
       cardPreviewOverlay: document.getElementById("card-preview-overlay"),
       cardPreviewImage: document.getElementById("card-preview-image"),
       cardPreviewPlayBtn: document.getElementById("card-preview-play-btn"),
+      cardPreviewCloseBtn: document.getElementById("card-preview-close-btn"),
       statusText: document.getElementById("status-text"),
       actionText: document.getElementById("action-text"),
       infoText: document.getElementById("info-text"),
@@ -183,6 +185,34 @@ class Game {
         action();
       };
     }
+    if (this.ui.cardPreviewCloseBtn) {
+      this.ui.cardPreviewCloseBtn.onclick = event => {
+        event.stopPropagation();
+        this.hideCardPreview();
+      };
+    }
+    document.addEventListener("keydown", event => {
+      if (!this.ui.cardPreviewOverlay?.classList.contains("is-open")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.hideCardPreview();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [this.ui.cardPreviewCloseBtn, this.ui.cardPreviewPlayBtn].filter(
+        button => button && !button.hidden && !button.disabled
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
   }
 
   start() {
@@ -334,6 +364,22 @@ class Game {
     this.renderHand(this.players[0], this.ui.p1Hand, 0);
   }
 
+  bindCardPreview(img, card, options = {}) {
+    const openPreview = () => this.showCardPreview(card, options);
+    const previewLabel = document.documentElement.lang.toLowerCase().startsWith("sv")
+      ? "Öppna kortförhandsvisning"
+      : "Open card preview";
+    img.setAttribute("role", "button");
+    img.tabIndex = 0;
+    img.setAttribute("aria-label", `${this.getCardTitle(card)}. ${previewLabel}.`);
+    img.addEventListener("click", openPreview);
+    img.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openPreview();
+    });
+  }
+
   renderHand(player, container, playerIndex) {
     container.innerHTML = "";
     const isCurrent = this.currentPlayerIndex === playerIndex;
@@ -349,12 +395,10 @@ class Game {
       if (isPlayable) img.classList.add("is-playable");
 
       const isHumanTurn = isCurrent && player.kind === "human" && !this.gameOver;
-      img.onclick = () => {
-        const canPlayFromPreview = isHumanTurn && isPlayable;
-        this.showCardPreview(card, {
-          onPlay: canPlayFromPreview ? () => this.playCardFromHand(player, card.id) : null
-        });
-      };
+      const canPlayFromPreview = isHumanTurn && isPlayable;
+      this.bindCardPreview(img, card, {
+        onPlay: canPlayFromPreview ? () => this.playCardFromHand(player, card.id) : null
+      });
 
       if (!isPlayable) {
         img.classList.add("is-idle");
@@ -379,7 +423,7 @@ class Game {
         img.classList.add("is-entering");
       }
       img.style.setProperty("--chain-index", `${index}`);
-      img.onclick = () => this.showCardPreview(card);
+      this.bindCardPreview(img, card);
       this.ui.chainCards.appendChild(img);
     }
     this.lastRenderedChainLength = this.chainHistory.length;
@@ -391,13 +435,14 @@ class Game {
       img.alt = `Off-chain discard ${card.id}`;
       img.title = this.getCardTitle(card);
       img.className = "card is-previewable";
-      img.onclick = () => this.showCardPreview(card);
+      this.bindCardPreview(img, card);
       this.ui.offChainCards.appendChild(img);
     }
   }
 
   showCardPreview(card, options = {}) {
     if (!this.ui.cardPreviewOverlay || !this.ui.cardPreviewImage) return;
+    this.previewReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.previewAction = typeof options.onPlay === "function" ? options.onPlay : null;
     this.ui.cardPreviewImage.src = `cards/${card.filename}`;
     this.ui.cardPreviewImage.alt = this.getCardTitle(card);
@@ -410,6 +455,12 @@ class Game {
       this.ui.cardPreviewPlayBtn.hidden = !canPlay;
       this.ui.cardPreviewPlayBtn.disabled = !canPlay;
     }
+    window.requestAnimationFrame(() => {
+      const firstAction = this.ui.cardPreviewPlayBtn && !this.ui.cardPreviewPlayBtn.hidden
+        ? this.ui.cardPreviewPlayBtn
+        : this.ui.cardPreviewCloseBtn;
+      firstAction?.focus();
+    });
   }
 
   hideCardPreview() {
@@ -424,6 +475,8 @@ class Game {
       this.ui.cardPreviewPlayBtn.hidden = true;
       this.ui.cardPreviewPlayBtn.disabled = true;
     }
+    if (this.previewReturnFocus?.isConnected) this.previewReturnFocus.focus();
+    this.previewReturnFocus = null;
   }
 
   updateDrawButtonState() {

@@ -3,6 +3,7 @@
 
   const FOCUSABLE =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const CHECKOUT_URL = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
 
   function currentLanguage() {
     return document.documentElement.lang.toLowerCase().startsWith("sv") ? "sv" : "en";
@@ -16,8 +17,8 @@
           closeMenu: "Stäng menyn",
           checkoutTitle: "Shopify-kassan är öppen",
           checkoutCopy: "Slutför köpet i det säkra kassafönstret. Den här sidan ligger kvar bakom.",
-          reopen: "Öppna kassan igen",
-          cancel: "Stäng kassan",
+          reopen: "Fortsätt till kassan",
+          cancel: "Stäng meddelandet",
         }
       : {
           menu: "Menu",
@@ -25,14 +26,25 @@
           closeMenu: "Close menu",
           checkoutTitle: "Shopify checkout is open",
           checkoutCopy: "Complete your order in the secure checkout window. This page stays open behind it.",
-          reopen: "Open checkout again",
-          cancel: "Close checkout",
+          reopen: "Continue to checkout",
+          cancel: "Dismiss",
       };
   }
 
-  function menuDescription(href) {
+  function menuDescription(link) {
     const swedish = currentLanguage() === "sv";
-    const value = String(href || "").toLowerCase();
+    const value = String(link?.getAttribute("href") || "").toLowerCase();
+    if (link?.hasAttribute("hreflang") || link?.classList.contains("landing-nav-link--language")) {
+      return swedish ? "Byt språk för hela webbplatsen." : "Switch language for the full website.";
+    }
+    if (link?.classList.contains("landing-nav-link--buy") || value.includes("/cart/")) {
+      return swedish
+        ? "Fri frakt i Sverige · säker kassa via Shopify."
+        : "Free Swedish shipping · secure Shopify checkout.";
+    }
+    if (value.includes("bjj-kortspel") || value.includes("bjj-card-game")) {
+      return swedish ? "För barn, familjer, lagkamrater och BJJ-klubbar." : "For kids, families, teammates, and BJJ academies.";
+    }
     if (value.includes("game.html")) {
       return swedish ? "Känn hur kortkedjan fungerar direkt i webbläsaren." : "Feel how the card chain works in your browser.";
     }
@@ -42,17 +54,11 @@
     if (value.includes("about.html")) {
       return swedish ? "Positioner, press, escapes och submissions." : "Positions, pressure, escapes, and submissions.";
     }
-    if (value.includes("bjj-kortspel") || value.includes("bjj-card-game")) {
-      return swedish ? "För barn, familjer, lagkamrater och BJJ-klubbar." : "For kids, families, teammates, and BJJ academies.";
-    }
     if (value.includes("shop.chaingrapplers.com") || value.includes("buy.html")) {
       return swedish ? "Se produktdetaljerna i vår säkra butik." : "See every product detail in our secure store.";
     }
     if (value === "./" || value.endsWith("index.html")) {
       return swedish ? "Produkten, priset och det viktigaste först." : "The product, price, and essentials first.";
-    }
-    if (value.includes("../") || value.includes("/en")) {
-      return swedish ? "Byt språk för hela webbplatsen." : "Switch language for the full website.";
     }
     return swedish ? "Utforska mer om ChainGrapplers." : "Explore more of ChainGrapplers.";
   }
@@ -72,10 +78,38 @@
       nav.insertBefore(home, nav.firstChild);
     }
 
+    let buyLink = [...nav.querySelectorAll(":scope > a")].find((link) => {
+      const href = (link.getAttribute("href") || "").toLowerCase();
+      return href.includes("shop.chaingrapplers.com") || href.endsWith("buy.html");
+    });
+    if (!buyLink) {
+      buyLink = document.createElement("a");
+      buyLink.className = "landing-nav-link";
+      nav.insertBefore(buyLink, nav.firstChild);
+    }
+    buyLink.classList.add("landing-nav-link--buy");
+    buyLink.removeAttribute("aria-current");
+    buyLink.href = CHECKOUT_URL;
+    buyLink.dataset.shopifyCheckout = "";
+    buyLink.dataset.checkoutUrl = CHECKOUT_URL;
+
+    const buyTitle = currentLanguage() === "sv" ? "Köp spelet — 299 kr" : "Buy the game — 299 SEK";
+    const existingBuyTitle = buyLink.querySelector(":scope > span");
+    if (existingBuyTitle) existingBuyTitle.textContent = buyTitle;
+    else buyLink.textContent = buyTitle;
+    nav.insertBefore(buyLink, nav.firstChild);
+
     nav.querySelectorAll(":scope > a").forEach((link) => {
-      if (link.querySelector("span")) return;
+      if (link.querySelector(":scope > span")) {
+        const detail = link.querySelector(":scope > small");
+        if (detail) {
+          detail.dataset.siteMenuDescription = "true";
+          detail.textContent = menuDescription(link);
+        }
+        return;
+      }
       const linkLabel = link.textContent.trim();
-      const description = menuDescription(link.getAttribute("href"));
+      const description = menuDescription(link);
       link.textContent = "";
       const title = document.createElement("span");
       const detail = document.createElement("small");
@@ -88,7 +122,7 @@
 
   function updateMenuDescriptions(nav) {
     nav.querySelectorAll("[data-site-menu-description]").forEach((detail) => {
-      detail.textContent = menuDescription(detail.closest("a")?.getAttribute("href"));
+      detail.textContent = menuDescription(detail.closest("a"));
     });
   }
 
@@ -130,7 +164,7 @@
     backdrop.setAttribute("aria-hidden", "true");
 
     header.appendChild(toggle);
-    document.body.appendChild(backdrop);
+    header.appendChild(backdrop);
 
     const closeButton = menuHeader.querySelector(".site-menu-close");
     let previouslyFocused = null;
@@ -165,9 +199,7 @@
     toggle.addEventListener("click", () => setOpen(true));
     closeButton.addEventListener("click", () => setOpen(false));
     backdrop.addEventListener("click", () => setOpen(false));
-    nav.addEventListener("click", (event) => {
-      if (event.target.closest("a")) setOpen(false);
-    });
+    document.addEventListener("cg-close-menu", () => setOpen(false));
 
     document.addEventListener("keydown", (event) => {
       if (!nav.classList.contains("is-open")) return;
@@ -201,6 +233,27 @@
     setOpen(false);
   }
 
+  function createQuickBuyStrip() {
+    if (document.body.classList.contains("product-home") || document.querySelector(".quick-buy-strip")) return;
+    const header = document.querySelector(".landing-topbar");
+    if (!header) return;
+
+    const swedish = currentLanguage() === "sv";
+    const strip = document.createElement("section");
+    strip.className = "quick-buy-strip";
+    strip.setAttribute("aria-label", swedish ? "Köp ChainGrapplers" : "Buy ChainGrapplers");
+    strip.innerHTML = `
+      <div class="quick-buy-strip__copy">
+        <strong>ChainGrapplers</strong>
+        <span>${swedish ? "BJJ-kortspel · 2 spelare · 299 kr · fri frakt" : "BJJ card game · 2 players · 299 SEK · free Swedish shipping"}</span>
+      </div>
+      <a href="${CHECKOUT_URL}" data-shopify-checkout data-checkout-url="${CHECKOUT_URL}">
+        ${swedish ? "Köp spelet" : "Buy the game"}<span aria-hidden="true"> →</span>
+      </a>
+    `;
+    header.insertAdjacentElement("afterend", strip);
+  }
+
   function createCheckoutOverlay() {
     const triggers = [...document.querySelectorAll("[data-shopify-checkout]")];
     if (!triggers.length) return;
@@ -230,7 +283,20 @@
     const close = overlay.querySelector(".checkout-overlay__close");
     let checkoutWindow = null;
     let checkoutUrl = "";
-    let popupWatch = null;
+    let returnFocus = null;
+
+    function setBackgroundInert(inert) {
+      [...document.body.children].forEach((element) => {
+        if (element === overlay || element.tagName === "SCRIPT") return;
+        if (inert && !element.hasAttribute("inert")) {
+          element.setAttribute("inert", "");
+          element.dataset.checkoutInert = "true";
+        } else if (!inert && element.dataset.checkoutInert === "true") {
+          element.removeAttribute("inert");
+          delete element.dataset.checkoutInert;
+        }
+      });
+    }
 
     function updateLabels() {
       const text = labels();
@@ -240,19 +306,11 @@
       close.textContent = text.cancel;
     }
 
-    function hideOverlay(closeWindow) {
-      if (closeWindow && checkoutWindow && !checkoutWindow.closed) checkoutWindow.close();
-      window.clearInterval(popupWatch);
-      popupWatch = null;
+    function hideOverlay() {
       overlay.hidden = true;
       document.body.classList.remove("checkout-is-open");
-    }
-
-    function watchPopup() {
-      window.clearInterval(popupWatch);
-      popupWatch = window.setInterval(() => {
-        if (!checkoutWindow || checkoutWindow.closed) hideOverlay(false);
-      }, 600);
+      setBackgroundInert(false);
+      if (returnFocus instanceof HTMLElement) returnFocus.focus();
     }
 
     function openPopup(url) {
@@ -263,18 +321,17 @@
       const features = `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
       checkoutWindow = window.open(url, "chaingrapplers-shopify-checkout", features);
       if (!checkoutWindow) return false;
-      try {
-        checkoutWindow.opener = null;
-      } catch (_) {
-        // Shopify is a trusted cross-origin checkout; browsers may lock this property.
-      }
       checkoutWindow.focus();
       return true;
     }
 
-    function beginCheckout(url) {
+    function beginCheckout(url, trigger) {
       checkoutUrl = url;
+      returnFocus = trigger.closest(".site-menu-panel")
+        ? document.querySelector(".site-menu-toggle")
+        : trigger;
       updateLabels();
+      document.dispatchEvent(new CustomEvent("cg-close-menu"));
 
       if (window.matchMedia("(max-width: 719px)").matches) {
         window.location.assign(url);
@@ -288,30 +345,45 @@
 
       overlay.hidden = false;
       document.body.classList.add("checkout-is-open");
-      watchPopup();
+      setBackgroundInert(true);
       window.requestAnimationFrame(() => close.focus());
     }
 
     triggers.forEach((trigger) => {
       trigger.addEventListener("click", (event) => {
         const url = trigger.dataset.checkoutUrl || trigger.href;
-        if (!url || event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+        if (!url || event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        beginCheckout(url);
+        beginCheckout(url, trigger);
       });
     });
 
     reopen.addEventListener("click", () => {
-      if (!checkoutWindow || checkoutWindow.closed) openPopup(checkoutUrl);
-      else checkoutWindow.focus();
-      watchPopup();
+      if (!openPopup(checkoutUrl)) window.location.assign(checkoutUrl);
     });
-    close.addEventListener("click", () => hideOverlay(true));
+    close.addEventListener("click", hideOverlay);
     overlay.addEventListener("click", (event) => {
-      if (event.target === overlay) hideOverlay(true);
+      if (event.target === overlay) hideOverlay();
     });
     document.addEventListener("keydown", (event) => {
-      if (!overlay.hidden && event.key === "Escape") hideOverlay(true);
+      if (overlay.hidden) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        hideOverlay();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [...overlay.querySelectorAll(FOCUSABLE)].filter((element) => !element.hidden);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     });
     window.addEventListener("cg-language-change", updateLabels);
     updateLabels();
@@ -319,6 +391,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     createMenu();
+    createQuickBuyStrip();
     createCheckoutOverlay();
   });
 })();

@@ -1,6 +1,7 @@
 (function () {
   const STORAGE_KEY = "chaingrapplers-language";
   const DEFAULT_LANG = "sv";
+  const ROUTE_LANG = document.documentElement.lang.toLowerCase().startsWith("en") ? "en" : DEFAULT_LANG;
 
   const sv = {
     "A BJJ Card Game": "Ett BJJ-kortspel",
@@ -300,14 +301,30 @@
   }
 
   function getLang() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "sv" || stored === "en" ? stored : DEFAULT_LANG;
+    return ROUTE_LANG;
+  }
+
+  function languagePath(lang) {
+    const currentPath = window.location.pathname;
+    const onEnglishRoute = /^\/en(?:\/|$)/.test(currentPath);
+    const file = currentPath.split("/").filter(Boolean).pop() || "index.html";
+
+    if (lang === "en") {
+      if (onEnglishRoute) return currentPath;
+      if (file === "bjj-kortspel.html") return "/en/bjj-card-game.html";
+      if (["game.html", "about.html", "rules.html"].includes(file)) return `/en/${file}`;
+      return "/en/";
+    }
+
+    if (!onEnglishRoute) return currentPath;
+    if (file === "bjj-card-game.html") return "/bjj-kortspel.html";
+    if (["game.html", "about.html", "rules.html"].includes(file)) return `/${file}`;
+    return "/";
   }
 
   function setLang(lang) {
     localStorage.setItem(STORAGE_KEY, lang);
-    applyTranslations();
-    window.dispatchEvent(new CustomEvent("cg-language-change", { detail: { lang } }));
+    if (lang !== getLang()) window.location.assign(languagePath(lang));
   }
 
   function fillTemplate(text, vars = {}) {
@@ -400,7 +417,7 @@
 
   function injectSelector() {
     const nav = document.querySelector(".landing-nav");
-    if (!nav || nav.querySelector(".language-switcher")) return;
+    if (!nav || nav.querySelector(".language-switcher") || nav.querySelector("[hreflang]")) return;
     const switcher = document.createElement("div");
     switcher.className = "language-switcher";
     switcher.setAttribute("role", "group");
