@@ -190,7 +190,7 @@ test("every public page uses the shared full-height menu", () => {
 test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
-    assert.match(html, /styles\.css\?v=20260822b/, path.relative(root, htmlFile));
+    assert.match(html, /styles\.css\?v=20260823a/, path.relative(root, htmlFile));
   }
 });
 
@@ -200,15 +200,40 @@ test("product landing pages use the live Shopify product and checkout cart perma
 
   for (const htmlFile of ["index.html", path.join("en", "index.html")]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
-    assert.match(html, /class="product-hero"/);
+    assert.match(html, /class="product-hero(?:\s[^"]*)?"/);
     assert.match(html, /data-shopify-checkout/);
     assert.ok(html.includes(cartUrl), `${htmlFile} is missing the live cart permalink`);
     assert.ok(html.includes(productImage), `${htmlFile} is missing the live product image`);
     assert.match(html, /299 (?:kr|SEK)/);
-    assert.match(html, /class="product-how"/);
+    assert.match(html, /class="product-action-title"/);
+    assert.match(html, /product-action-title__green/);
+    assert.match(html, /product-action-title__yellow/);
+    assert.match(html, /product-action-title__orange/);
+    assert.match(html, /class="product-proof product-proof--landing"/);
     assert.match(html, /class="mobile-buy-bar"/);
-    assert.match(html, /chaingrapplers-cards-1\.png/);
+    assert.doesNotMatch(html, /class="product-how"/);
   }
+});
+
+test("the landing header and sticky purchase bar match the requested positions", () => {
+  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  assert.match(styles, /\.product-home \.landing-brand\s*\{[^}]*order:\s*2/s);
+  assert.match(styles, /\.product-home \.site-menu-toggle\s*\{[^}]*order:\s*1/s);
+  assert.match(styles, /\.product-home \.landing-nav\.site-menu-panel\s*\{[^}]*inset:\s*0 auto 0 0/s);
+  assert.match(styles, /\.product-home \.mobile-buy-bar\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /\.product-home \.mobile-buy-bar strong\s*\{[^}]*font-size:\s*1rem/s);
+  assert.match(styles, /\.product-home \.mobile-buy-bar > a\s*\{[^}]*min-height:\s*56px/s);
+
+  const swedish = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const english = fs.readFileSync(path.join(root, "en", "index.html"), "utf8");
+  assert.match(swedish, /Kontra\./);
+  assert.match(swedish, /Sätt press\./);
+  assert.match(swedish, /Hitta avslutet\./);
+  assert.match(swedish, /Inte bara tur/);
+  assert.match(english, /Counter\./);
+  assert.match(english, /Apply pressure\./);
+  assert.match(english, /Find the finish\./);
+  assert.match(english, /Not just luck/);
 });
 
 test("the menu prioritizes the direct purchase path on every page", () => {
