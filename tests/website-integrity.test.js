@@ -175,7 +175,7 @@ test("every public page uses the shared full-height menu", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     const scriptPath = htmlFile.includes(`${path.sep}en${path.sep}`) ? "../site.js" : "site.js";
-    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260822b["']`), path.relative(root, htmlFile));
+    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260823c["']`), path.relative(root, htmlFile));
   }
 
   const menuScript = fs.readFileSync(path.join(root, "site.js"), "utf8");
@@ -190,7 +190,7 @@ test("every public page uses the shared full-height menu", () => {
 test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
-    assert.match(html, /styles\.css\?v=20260823b/, path.relative(root, htmlFile));
+    assert.match(html, /styles\.css\?v=20260823c/, path.relative(root, htmlFile));
   }
 });
 
@@ -247,6 +247,18 @@ test("the menu prioritizes the direct purchase path on every page", () => {
   assert.match(script, /landing-nav-link--buy/);
   assert.match(script, /nav\.insertBefore\(buyLink, nav\.firstChild\)/);
   assert.match(script, /createQuickBuyStrip\(\)/);
+  assert.match(script, /return swedish \? "Köp — 299 kr" : "Buy — 299 SEK"/);
+  assert.match(script, /return "Demo"/);
+  assert.doesNotMatch(script, /menuDescription/);
+});
+
+test("supporting pages share the landing page paper-and-mat design", () => {
+  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  assert.match(styles, /body\.info-page\s*\{[^}]*background:\s*var\(--cg-paper\)/s);
+  assert.match(styles, /\.info-page \.landing-brand\s*\{[^}]*order:\s*2/s);
+  assert.match(styles, /\.info-page \.site-menu-toggle\s*\{[^}]*order:\s*1/s);
+  assert.match(styles, /\.info-page \.landing-nav\.site-menu-panel\s*\{[^}]*inset:\s*0 auto 0 0/s);
+  assert.match(styles, /\.info-page \.landing-hero\s*\{[^}]*background:\s*var\(--cg-paper-deep\)/s);
 });
 
 test("English discovery page keeps visitors on English routes", () => {

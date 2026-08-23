@@ -31,36 +31,34 @@
       };
   }
 
-  function menuDescription(link) {
+  function menuTitle(link) {
     const swedish = currentLanguage() === "sv";
     const value = String(link?.getAttribute("href") || "").toLowerCase();
     if (link?.hasAttribute("hreflang") || link?.classList.contains("landing-nav-link--language")) {
-      return swedish ? "Byt språk för hela webbplatsen." : "Switch language for the full website.";
+      return swedish ? "English" : "Svenska";
     }
     if (link?.classList.contains("landing-nav-link--buy") || value.includes("/cart/")) {
-      return swedish
-        ? "Fri frakt i Sverige · säker kassa via Shopify."
-        : "Free Swedish shipping · secure Shopify checkout.";
+      return swedish ? "Köp — 299 kr" : "Buy — 299 SEK";
     }
     if (value.includes("bjj-kortspel") || value.includes("bjj-card-game")) {
-      return swedish ? "För barn, familjer, lagkamrater och BJJ-klubbar." : "For kids, families, teammates, and BJJ academies.";
+      return swedish ? "För vem?" : "Who is it for?";
     }
     if (value.includes("game.html")) {
-      return swedish ? "Känn hur kortkedjan fungerar direkt i webbläsaren." : "Feel how the card chain works in your browser.";
+      return "Demo";
     }
     if (value.includes("rules.html")) {
-      return swedish ? "Regler, specialkort och hur en match avgörs." : "Rules, special cards, and how a match is decided.";
+      return swedish ? "Regler" : "Rules";
     }
     if (value.includes("about.html")) {
-      return swedish ? "Positioner, press, escapes och submissions." : "Positions, pressure, escapes, and submissions.";
+      return swedish ? "Om spelet" : "About";
     }
     if (value.includes("shop.chaingrapplers.com") || value.includes("buy.html")) {
-      return swedish ? "Se produktdetaljerna i vår säkra butik." : "See every product detail in our secure store.";
+      return swedish ? "Köp — 299 kr" : "Buy — 299 SEK";
     }
     if (value === "./" || value.endsWith("index.html")) {
-      return swedish ? "Produkten, priset och det viktigaste först." : "The product, price, and essentials first.";
+      return swedish ? "Start" : "Home";
     }
-    return swedish ? "Utforska mer om ChainGrapplers." : "Explore more of ChainGrapplers.";
+    return link?.textContent.trim() || (swedish ? "Mer" : "More");
   }
 
   function enrichMenu(nav) {
@@ -93,36 +91,21 @@
     buyLink.dataset.shopifyCheckout = "";
     buyLink.dataset.checkoutUrl = CHECKOUT_URL;
 
-    const buyTitle = currentLanguage() === "sv" ? "Köp spelet — 299 kr" : "Buy the game — 299 SEK";
-    const existingBuyTitle = buyLink.querySelector(":scope > span");
-    if (existingBuyTitle) existingBuyTitle.textContent = buyTitle;
-    else buyLink.textContent = buyTitle;
     nav.insertBefore(buyLink, nav.firstChild);
 
     nav.querySelectorAll(":scope > a").forEach((link) => {
-      if (link.querySelector(":scope > span")) {
-        const detail = link.querySelector(":scope > small");
-        if (detail) {
-          detail.dataset.siteMenuDescription = "true";
-          detail.textContent = menuDescription(link);
-        }
-        return;
-      }
-      const linkLabel = link.textContent.trim();
-      const description = menuDescription(link);
+      const linkLabel = menuTitle(link);
       link.textContent = "";
       const title = document.createElement("span");
-      const detail = document.createElement("small");
       title.textContent = linkLabel;
-      detail.textContent = description;
-      detail.dataset.siteMenuDescription = "true";
-      link.append(title, detail);
+      link.append(title);
     });
   }
 
-  function updateMenuDescriptions(nav) {
-    nav.querySelectorAll("[data-site-menu-description]").forEach((detail) => {
-      detail.textContent = menuDescription(detail.closest("a"));
+  function updateMenuTitles(nav) {
+    nav.querySelectorAll(":scope > a").forEach((link) => {
+      const title = link.querySelector(":scope > span");
+      if (title) title.textContent = menuTitle(link);
     });
   }
 
@@ -227,7 +210,7 @@
 
     window.addEventListener("cg-language-change", () => {
       updateLabels();
-      updateMenuDescriptions(nav);
+      updateMenuTitles(nav);
     });
     updateLabels();
     setOpen(false);
