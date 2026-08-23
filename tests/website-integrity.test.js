@@ -190,13 +190,13 @@ test("every public page uses the shared full-height menu", () => {
 test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
-    assert.match(html, /styles\.css\?v=20260823a/, path.relative(root, htmlFile));
+    assert.match(html, /styles\.css\?v=20260823b/, path.relative(root, htmlFile));
   }
 });
 
 test("product landing pages use the live Shopify product and checkout cart permalink", () => {
   const cartUrl = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
-  const productImage = "chaingrapplers-package.png";
+  const productImage = "chaingrapplers-product-hero-v2.png";
 
   for (const htmlFile of ["index.html", path.join("en", "index.html")]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
@@ -229,11 +229,16 @@ test("the landing header and sticky purchase bar match the requested positions",
   assert.match(swedish, /Kontra\./);
   assert.match(swedish, /Sätt press\./);
   assert.match(swedish, /Hitta avslutet\./);
+  assert.match(swedish, /Lätt att lära sig/);
+  assert.doesNotMatch(swedish, /Lätt att börja/);
   assert.match(swedish, /Inte bara tur/);
   assert.match(english, /Counter\./);
   assert.match(english, /Apply pressure\./);
   assert.match(english, /Find the finish\./);
+  assert.match(english, /Easy to learn/);
   assert.match(english, /Not just luck/);
+  assert.match(styles, /\.product-action-title__yellow\s*\{[^}]*color:\s*var\(--cg-yellow\)/s);
+  assert.doesNotMatch(styles, /border-radius:\s*\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px/);
 });
 
 test("the menu prioritizes the direct purchase path on every page", () => {
