@@ -1,0 +1,78 @@
+{% liquid
+  assign featured_product = collections.all.products.first
+  assign featured_variant = featured_product.selected_or_first_available_variant
+%}
+
+<section class="cg-shop-home">
+  <div class="cg-shop-grid">
+    <div class="cg-shop-copy">
+      <p class="cg-kicker">BJJ-kortspel för två</p>
+      <h1 class="cg-shop-title">
+        <span class="cg-shop-title__green">Kontra.</span>
+        <span class="cg-shop-title__yellow">Sätt press.</span>
+        <span class="cg-shop-title__orange">Hitta avslutet.</span>
+      </h1>
+      <p class="cg-shop-lead">
+        Matcha färger, bygg en kedja av BJJ-positioner och pressa motståndaren mot submission.
+        Lätt att lära sig — även om du inte tränar BJJ.
+      </p>
+
+      <div class="cg-proof-row" aria-label="Om spelet">
+        <span>2 spelare</span>
+        <span>Från 7 år</span>
+        <span>1–10 min</span>
+      </div>
+
+      <nav class="cg-secondary-links" aria-label="Lär känna ChainGrapplers">
+        <a href="https://chaingrapplers.com/game.html">Spela demon</a>
+        <a href="https://chaingrapplers.com/rules.html">Läs reglerna</a>
+      </nav>
+    </div>
+
+    {% if featured_product != blank %}
+      <article class="cg-product-panel">
+        <a class="cg-product-link" href="{{ featured_product.url }}">
+          {% if featured_product.featured_image != blank %}
+            {{ featured_product.featured_image
+              | image_url: width: 1000
+              | image_tag:
+                class: 'cg-product-image',
+                loading: 'eager',
+                widths: '360, 540, 720, 1000',
+                sizes: '(max-width: 749px) 86vw, 42vw',
+                alt: featured_product.title
+            }}
+          {% endif %}
+        </a>
+
+        <div class="cg-product-meta">
+          <h2 class="cg-product-name">{{ featured_product.title }}</h2>
+          <p class="cg-product-price">{{ featured_product.price | money }}</p>
+        </div>
+
+        {% form 'product', featured_product %}
+          <input type="hidden" name="id" value="{{ featured_variant.id }}">
+          <button class="cg-buy-button" type="submit" {% unless featured_variant.available %}disabled{% endunless %}>
+            {% if featured_variant.available %}
+              Lägg i varukorgen
+            {% else %}
+              Tillfälligt slutsåld
+            {% endif %}
+          </button>
+        {% endform %}
+      </article>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ChainGrapplers butik",
+  "settings": [],
+  "presets": [
+    {
+      "name": "ChainGrapplers butik"
+    }
+  ]
+}
+{% endschema %}
