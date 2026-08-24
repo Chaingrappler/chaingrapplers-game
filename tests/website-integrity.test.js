@@ -291,6 +291,8 @@ test("Shopify checkout uses a secure popup overlay with a navigation fallback", 
   const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
   assert.match(script, /CAMPAIGN_PARAMETERS/);
   assert.match(script, /checkoutUrlWithCampaignParameters/);
+  assert.match(script, /searchParams\.delete\("checkout"\)/);
+  assert.match(script, /checkoutUrl\.search = `\?checkout/);
   assert.match(script, /utm_source/);
   assert.match(script, /utm_content/);
   assert.match(script, /window\.open\(url, "chaingrapplers-shopify-checkout"/);

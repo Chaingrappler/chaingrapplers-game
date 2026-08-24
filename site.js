@@ -15,11 +15,17 @@
 
   function checkoutUrlWithCampaignParameters(url = CHECKOUT_URL) {
     const checkoutUrl = new URL(url, window.location.href);
+    const shouldStartCheckout = checkoutUrl.searchParams.has("checkout");
+    checkoutUrl.searchParams.delete("checkout");
     const pageParameters = new URLSearchParams(window.location.search);
     CAMPAIGN_PARAMETERS.forEach((parameter) => {
       const value = pageParameters.get(parameter);
       if (value) checkoutUrl.searchParams.set(parameter, value);
     });
+    if (shouldStartCheckout) {
+      const remainingParameters = checkoutUrl.searchParams.toString();
+      checkoutUrl.search = `?checkout${remainingParameters ? `&${remainingParameters}` : ""}`;
+    }
     return checkoutUrl.toString();
   }
 
