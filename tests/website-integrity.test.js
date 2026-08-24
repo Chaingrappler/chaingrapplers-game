@@ -175,7 +175,7 @@ test("every public page uses the shared full-height menu", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     const scriptPath = htmlFile.includes(`${path.sep}en${path.sep}`) ? "../site.js" : "site.js";
-    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260823c["']`), path.relative(root, htmlFile));
+    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260824a["']`), path.relative(root, htmlFile));
   }
 
   const menuScript = fs.readFileSync(path.join(root, "site.js"), "utf8");
@@ -190,7 +190,7 @@ test("every public page uses the shared full-height menu", () => {
 test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
-    assert.match(html, /styles\.css\?v=20260823c/, path.relative(root, htmlFile));
+    assert.match(html, /styles\.css\?v=20260824a/, path.relative(root, htmlFile));
   }
 });
 
@@ -241,15 +241,30 @@ test("the landing header and sticky purchase bar match the requested positions",
   assert.doesNotMatch(styles, /border-radius:\s*\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px\s+\d+(?:\.\d+)?px/);
 });
 
-test("the menu prioritizes the direct purchase path on every page", () => {
+test("the menu stays concise and consistent across every route", () => {
   const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
-  assert.match(script, /const CHECKOUT_URL = "https:\/\/shop\.chaingrapplers\.com\/cart\/62506751459658:1\?checkout"/);
-  assert.match(script, /landing-nav-link--buy/);
-  assert.match(script, /nav\.insertBefore\(buyLink, nav\.firstChild\)/);
-  assert.match(script, /createQuickBuyStrip\(\)/);
-  assert.match(script, /return swedish \? "Köp — 299 kr" : "Buy — 299 SEK"/);
-  assert.match(script, /return "Demo"/);
-  assert.doesNotMatch(script, /menuDescription/);
+  assert.match(script, /const routes = \[/);
+  assert.match(script, /\{ key: "start", href: "\.\/", label: swedish \? "Start" : "Home" \}/);
+  assert.match(script, /\{ key: "game", href: "game\.html", label: "Demo" \}/);
+  assert.match(script, /\{ key: "about", href: "about\.html", label: swedish \? "Om spelet" : "About" \}/);
+  assert.match(script, /\{ key: "rules", href: "rules\.html", label: swedish \? "Regler" : "Rules" \}/);
+  assert.match(script, /languageToggle\.className = `language-toggle/);
+  assert.match(script, /languageToggle\.setAttribute\("role", "switch"\)/);
+  assert.match(script, /languageToggle\.setAttribute\("aria-checked"/);
+  assert.match(script, /nav\.replaceChildren\(\)/);
+  assert.doesNotMatch(script, /landing-nav-link--buy/);
+  assert.doesNotMatch(script, /createQuickBuyStrip/);
+  assert.doesNotMatch(script, /För vem\?|Who is it for/);
+});
+
+test("only the about page receives the supporting sticky purchase bar", () => {
+  const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
+  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  assert.match(script, /if \(currentFile\(\) !== "about\.html" \|\| document\.querySelector\("\.mobile-buy-bar"\)\) return/);
+  assert.match(script, /className = "mobile-buy-bar mobile-buy-bar--support"/);
+  assert.match(script, /document\.body\.classList\.add\("support-buy-page"\)/);
+  assert.match(styles, /\.support-buy-page \.mobile-buy-bar\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /\.support-buy-page \.mobile-buy-bar > a\s*\{[^}]*min-height:\s*56px/s);
 });
 
 test("supporting pages share the landing page paper-and-mat design", () => {
@@ -259,6 +274,7 @@ test("supporting pages share the landing page paper-and-mat design", () => {
   assert.match(styles, /\.info-page \.site-menu-toggle\s*\{[^}]*order:\s*1/s);
   assert.match(styles, /\.info-page \.landing-nav\.site-menu-panel\s*\{[^}]*inset:\s*0 auto 0 0/s);
   assert.match(styles, /\.info-page \.landing-hero\s*\{[^}]*background:\s*var\(--cg-paper-deep\)/s);
+  assert.match(styles, /\.info-page :is\([\s\S]*\.arena-panel,[\s\S]*\.rule-chain-note[\s\S]*\)\s*\{[^}]*color:\s*var\(--cg-paper\)/s);
 });
 
 test("English discovery page keeps visitors on English routes", () => {

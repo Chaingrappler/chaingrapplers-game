@@ -31,82 +31,69 @@
       };
   }
 
-  function menuTitle(link) {
-    const swedish = currentLanguage() === "sv";
-    const value = String(link?.getAttribute("href") || "").toLowerCase();
-    if (link?.hasAttribute("hreflang") || link?.classList.contains("landing-nav-link--language")) {
-      return swedish ? "English" : "Svenska";
+  function currentFile() {
+    if (window.location.pathname.endsWith("/")) return "index.html";
+    return window.location.pathname.split("/").filter(Boolean).pop() || "index.html";
+  }
+
+  function languagePath(lang) {
+    const currentPath = window.location.pathname;
+    const onEnglishRoute = /^\/en(?:\/|$)/.test(currentPath);
+    const file = currentFile();
+
+    if (lang === "en") {
+      if (onEnglishRoute) return currentPath;
+      if (file === "bjj-kortspel.html") return "/en/bjj-card-game.html";
+      if (["game.html", "about.html", "rules.html"].includes(file)) return `/en/${file}`;
+      return "/en/";
     }
-    if (link?.classList.contains("landing-nav-link--buy") || value.includes("/cart/")) {
-      return swedish ? "Köp — 299 kr" : "Buy — 299 SEK";
-    }
-    if (value.includes("bjj-kortspel") || value.includes("bjj-card-game")) {
-      return swedish ? "För vem?" : "Who is it for?";
-    }
-    if (value.includes("game.html")) {
-      return "Demo";
-    }
-    if (value.includes("rules.html")) {
-      return swedish ? "Regler" : "Rules";
-    }
-    if (value.includes("about.html")) {
-      return swedish ? "Om spelet" : "About";
-    }
-    if (value.includes("shop.chaingrapplers.com") || value.includes("buy.html")) {
-      return swedish ? "Köp — 299 kr" : "Buy — 299 SEK";
-    }
-    if (value === "./" || value.endsWith("index.html")) {
-      return swedish ? "Start" : "Home";
-    }
-    return link?.textContent.trim() || (swedish ? "Mer" : "More");
+
+    if (!onEnglishRoute) return currentPath;
+    if (file === "bjj-card-game.html") return "/bjj-kortspel.html";
+    if (["game.html", "about.html", "rules.html"].includes(file)) return `/${file}`;
+    return "/";
   }
 
   function enrichMenu(nav) {
-    const links = [...nav.querySelectorAll(":scope > a")];
-    const hasHome = links.some((link) => {
-      const href = link.getAttribute("href") || "";
-      return href === "./" || href === "index.html";
-    });
+    const swedish = currentLanguage() === "sv";
+    const file = currentFile();
+    const activeRoute = file === "index.html" ? "start" : file.replace(".html", "");
+    const routes = [
+      { key: "start", href: "./", label: swedish ? "Start" : "Home" },
+      { key: "game", href: "game.html", label: "Demo" },
+      { key: "about", href: "about.html", label: swedish ? "Om spelet" : "About" },
+      { key: "rules", href: "rules.html", label: swedish ? "Regler" : "Rules" },
+    ];
 
-    if (!hasHome) {
-      const home = document.createElement("a");
-      home.className = "landing-nav-link";
-      home.href = currentLanguage() === "sv" ? "index.html" : "./";
-      home.textContent = currentLanguage() === "sv" ? "Kortspelet" : "The card game";
-      nav.insertBefore(home, nav.firstChild);
-    }
-
-    let buyLink = [...nav.querySelectorAll(":scope > a")].find((link) => {
-      const href = (link.getAttribute("href") || "").toLowerCase();
-      return href.includes("shop.chaingrapplers.com") || href.endsWith("buy.html");
-    });
-    if (!buyLink) {
-      buyLink = document.createElement("a");
-      buyLink.className = "landing-nav-link";
-      nav.insertBefore(buyLink, nav.firstChild);
-    }
-    buyLink.classList.add("landing-nav-link--buy");
-    buyLink.removeAttribute("aria-current");
-    buyLink.href = CHECKOUT_URL;
-    buyLink.dataset.shopifyCheckout = "";
-    buyLink.dataset.checkoutUrl = CHECKOUT_URL;
-
-    nav.insertBefore(buyLink, nav.firstChild);
-
-    nav.querySelectorAll(":scope > a").forEach((link) => {
-      const linkLabel = menuTitle(link);
-      link.textContent = "";
+    nav.replaceChildren();
+    routes.forEach((route) => {
+      const link = document.createElement("a");
+      link.className = "landing-nav-link";
+      link.href = route.href;
+      if (route.key === activeRoute) link.setAttribute("aria-current", "page");
       const title = document.createElement("span");
-      title.textContent = linkLabel;
+      title.textContent = route.label;
       link.append(title);
+      nav.append(link);
     });
-  }
 
-  function updateMenuTitles(nav) {
-    nav.querySelectorAll(":scope > a").forEach((link) => {
-      const title = link.querySelector(":scope > span");
-      if (title) title.textContent = menuTitle(link);
+    const languageToggle = document.createElement("button");
+    languageToggle.type = "button";
+    languageToggle.className = `language-toggle${swedish ? "" : " is-english"}`;
+    languageToggle.setAttribute("role", "switch");
+    languageToggle.setAttribute("aria-checked", String(!swedish));
+    languageToggle.setAttribute("aria-label", swedish ? "Byt till engelska" : "Switch to Swedish");
+    languageToggle.innerHTML = `
+      <span>SV</span>
+      <span class="language-toggle__track" aria-hidden="true"><i></i></span>
+      <span>EN</span>
+    `;
+    languageToggle.addEventListener("click", () => {
+      const nextLanguage = currentLanguage() === "sv" ? "en" : "sv";
+      localStorage.setItem("chaingrapplers-language", nextLanguage);
+      window.location.assign(languagePath(nextLanguage));
     });
+    nav.append(languageToggle);
   }
 
   function createMenu() {
@@ -210,31 +197,27 @@
 
     window.addEventListener("cg-language-change", () => {
       updateLabels();
-      updateMenuTitles(nav);
     });
     updateLabels();
     setOpen(false);
   }
 
-  function createQuickBuyStrip() {
-    if (document.body.classList.contains("product-home") || document.querySelector(".quick-buy-strip")) return;
-    const header = document.querySelector(".landing-topbar");
-    if (!header) return;
-
+  function createSupportBuyBar() {
+    if (currentFile() !== "about.html" || document.querySelector(".mobile-buy-bar")) return;
     const swedish = currentLanguage() === "sv";
-    const strip = document.createElement("section");
-    strip.className = "quick-buy-strip";
-    strip.setAttribute("aria-label", swedish ? "Köp ChainGrapplers" : "Buy ChainGrapplers");
-    strip.innerHTML = `
-      <div class="quick-buy-strip__copy">
-        <strong>ChainGrapplers</strong>
-        <span>${swedish ? "BJJ-kortspel · 2 spelare · 299 kr · fri frakt" : "BJJ card game · 2 players · 299 SEK · free Swedish shipping"}</span>
-      </div>
+    document.body.classList.add("support-buy-page");
+    const bar = document.createElement("aside");
+    bar.className = "mobile-buy-bar mobile-buy-bar--support";
+    bar.setAttribute("aria-label", swedish ? "Köp ChainGrapplers" : "Buy ChainGrapplers");
+    bar.innerHTML = `
+      <div><strong>ChainGrapplers</strong><span>${swedish ? "299 kr · Fri frakt" : "299 SEK · Free Swedish shipping"}</span></div>
       <a href="${CHECKOUT_URL}" data-shopify-checkout data-checkout-url="${CHECKOUT_URL}">
-        ${swedish ? "Köp spelet" : "Buy the game"}<span aria-hidden="true"> →</span>
+        ${swedish ? "Köp spelet" : "Buy the game"}
       </a>
     `;
-    header.insertAdjacentElement("afterend", strip);
+    const footer = document.querySelector(".site-footer");
+    if (footer) footer.before(bar);
+    else document.body.append(bar);
   }
 
   function createCheckoutOverlay() {
@@ -374,7 +357,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     createMenu();
-    createQuickBuyStrip();
+    createSupportBuyBar();
     createCheckoutOverlay();
   });
 })();
