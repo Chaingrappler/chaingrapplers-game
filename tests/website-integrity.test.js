@@ -190,7 +190,7 @@ test("every public page uses the shared full-height menu", () => {
 test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
-    assert.match(html, /styles\.css\?v=20260824a/, path.relative(root, htmlFile));
+    assert.match(html, /styles\.css\?v=20260824b/, path.relative(root, htmlFile));
   }
 });
 
@@ -313,15 +313,41 @@ test("the browser demo exposes card controls and dialogs to keyboard users", () 
   assert.equal((englishGame.match(/<main\b/g) || []).length, 1);
 });
 
+test("the browser demo starts automatically while retaining the new-match control", () => {
+  const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
+  assert.match(script, /document\.addEventListener\("DOMContentLoaded", startGame, \{ once: true \}\)/);
+  assert.match(script, /document\.getElementById\("start-game-btn"\)\.addEventListener\("click", startGame\)/);
+
+  for (const htmlFile of ["game.html", path.join("en", "game.html")]) {
+    const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
+    assert.match(html, /script\.js\?v=20260824b/, htmlFile);
+  }
+});
+
+test("only the start pages retain the contact footer", () => {
+  const startPages = ["index.html", path.join("en", "index.html")];
+  for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, "utf8");
+    const relative = path.relative(root, htmlFile);
+    if (startPages.includes(relative)) {
+      assert.match(html, /mailto:admin@chaingrapplers\.com/, relative);
+    } else {
+      assert.doesNotMatch(html, /mailto:admin@chaingrapplers\.com/, relative);
+      assert.doesNotMatch(html, /<footer class="site-footer">/, relative);
+    }
+  }
+});
+
 test("language selection follows the requested route instead of stale browser preference", () => {
   const translations = fs.readFileSync(path.join(root, "i18n.js"), "utf8");
   assert.match(translations, /const ROUTE_LANG = document\.documentElement\.lang/);
   assert.match(translations, /return ROUTE_LANG/);
   assert.match(translations, /return `\/en\/\$\{file\}`/);
   assert.doesNotMatch(translations, /const stored = localStorage\.getItem\(STORAGE_KEY\)/);
+  assert.doesNotMatch(translations, /language-switcher|language-option|injectSelector/);
 
   for (const htmlFile of ["game.html", "about.html", "rules.html", "buy.html", path.join("en", "game.html")]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
-    assert.match(html, /i18n\.js\?v=20260822b/, htmlFile);
+    assert.match(html, /i18n\.js\?v=20260824b/, htmlFile);
   }
 });

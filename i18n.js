@@ -415,40 +415,13 @@
     nodes.forEach(translateTextNode);
   }
 
-  function injectSelector() {
-    const nav = document.querySelector(".landing-nav");
-    if (!nav || nav.querySelector(".language-switcher") || nav.querySelector("[hreflang]")) return;
-    const switcher = document.createElement("div");
-    switcher.className = "language-switcher";
-    switcher.setAttribute("role", "group");
-    switcher.setAttribute("aria-label", "Language");
-    switcher.innerHTML = `
-      <button type="button" class="language-option" data-lang-option="en">EN</button>
-      <button type="button" class="language-option" data-lang-option="sv">SV</button>
-    `;
-    switcher.querySelectorAll("[data-lang-option]").forEach((button) => {
-      button.addEventListener("click", () => setLang(button.dataset.langOption));
-    });
-    nav.appendChild(switcher);
-  }
-
   function applyTranslations(root = document.body) {
     if (!root || applying) return;
     applying = true;
     document.documentElement.lang = getLang() === "sv" ? "sv" : "en";
-    injectSelector();
     translateTitle();
     walkText(root);
     translateAttributes(root);
-    const switcher = document.querySelector(".language-switcher");
-    if (switcher) {
-      switcher.setAttribute("aria-label", translate("Language"));
-      switcher.querySelectorAll("[data-lang-option]").forEach((button) => {
-        const isActive = button.dataset.langOption === getLang();
-        button.classList.toggle("is-active", isActive);
-        button.setAttribute("aria-pressed", String(isActive));
-      });
-    }
     applying = false;
   }
 

@@ -1404,4 +1404,10 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
       }
     }
   });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startGame, { once: true });
+  } else {
+    startGame();
+  }
 }

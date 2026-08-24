@@ -1114,49 +1114,6 @@ body.info-page {
   box-shadow: 0 14px 24px rgba(213, 45, 19, 0.28);
 }
 
-.language-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.18rem;
-  min-height: 48px;
-  padding: 0.24rem;
-  border: 2px solid var(--white-outline);
-  border-radius: var(--pill-radius);
-  background: linear-gradient(180deg, rgba(1, 2, 67, 0.7), rgba(7, 22, 43, 0.94));
-  color: var(--ink);
-  box-shadow: 0 12px 0 rgba(1, 2, 67, 0.72);
-}
-
-.language-option {
-  display: inline-grid;
-  place-items: center;
-  min-width: 42px;
-  min-height: 34px;
-  border: 0;
-  border-radius: calc(var(--pill-radius) - 4px);
-  padding: 0 0.62rem;
-  background: transparent;
-  color: rgba(245, 243, 238, 0.78);
-  cursor: pointer;
-  font-family: "League Spartan", "Impact", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
-}
-
-.language-option:hover {
-  color: var(--ink);
-  transform: translateY(-1px);
-}
-
-.language-option.is-active {
-  background: linear-gradient(135deg, var(--orange), var(--red));
-  color: var(--ink);
-  box-shadow: 0 8px 18px rgba(213, 45, 19, 0.28);
-}
-
 .landing-nav-link--play,
 .landing-cta--warm {
   background: linear-gradient(135deg, var(--orange), var(--red));
@@ -1904,19 +1861,6 @@ body.info-page {
     font-weight: 900;
     letter-spacing: 0.04em;
     line-height: 1;
-  }
-
-  .language-switcher {
-    flex: 0 0 auto;
-    min-height: 34px;
-    padding: 0.18rem;
-  }
-
-  .language-option {
-    min-width: 34px;
-    min-height: 26px;
-    padding: 0 0.42rem;
-    font-size: 0.72rem;
   }
 
   body.info-page .landing-hero {
@@ -2917,15 +2861,6 @@ body.checkout-is-open {
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1.35;
-}
-
-.landing-nav.site-menu-panel .language-switcher {
-  align-self: flex-start;
-  min-height: 42px;
-  margin-top: 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: transparent;
-  box-shadow: none;
 }
 
 .site-menu-backdrop {
