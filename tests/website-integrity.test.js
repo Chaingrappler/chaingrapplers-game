@@ -53,9 +53,9 @@ test("all local HTML links, scripts, styles and images exist", () => {
   assert.deepEqual(missing, []);
 });
 
-test("every public page links to the Shopify product", () => {
-  const productUrl =
-    "https://shop.chaingrapplers.com/products/chaingrapplers-card-game";
+test("every public page links to the Shopify checkout", () => {
+  const checkoutUrl =
+    "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
 
   for (const htmlFile of [
     "index.html",
@@ -68,7 +68,7 @@ test("every public page links to the Shopify product", () => {
     path.join("en", "rules.html")
   ]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
-    assert.match(html, new RegExp(productUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(html, new RegExp(checkoutUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 });
 
@@ -175,7 +175,7 @@ test("every public page uses the shared full-height menu", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     const scriptPath = htmlFile.includes(`${path.sep}en${path.sep}`) ? "../site.js" : "site.js";
-    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260824a["']`), path.relative(root, htmlFile));
+    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260824c["']`), path.relative(root, htmlFile));
   }
 
   const menuScript = fs.readFileSync(path.join(root, "site.js"), "utf8");
@@ -191,6 +191,7 @@ test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     assert.match(html, /styles\.css\?v=20260824b/, path.relative(root, htmlFile));
+    assert.match(html, /site\.js\?v=20260824c/, path.relative(root, htmlFile));
   }
 });
 
@@ -288,6 +289,10 @@ test("English discovery page keeps visitors on English routes", () => {
 
 test("Shopify checkout uses a secure popup overlay with a navigation fallback", () => {
   const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
+  assert.match(script, /CAMPAIGN_PARAMETERS/);
+  assert.match(script, /checkoutUrlWithCampaignParameters/);
+  assert.match(script, /utm_source/);
+  assert.match(script, /utm_content/);
   assert.match(script, /window\.open\(url, "chaingrapplers-shopify-checkout"/);
   assert.match(script, /window\.location\.assign\(url\)/);
   assert.match(script, /setBackgroundInert\(true\)/);

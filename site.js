@@ -4,6 +4,24 @@
   const FOCUSABLE =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   const CHECKOUT_URL = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
+  const CAMPAIGN_PARAMETERS = [
+    "utm_id",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+  ];
+
+  function checkoutUrlWithCampaignParameters(url = CHECKOUT_URL) {
+    const checkoutUrl = new URL(url, window.location.href);
+    const pageParameters = new URLSearchParams(window.location.search);
+    CAMPAIGN_PARAMETERS.forEach((parameter) => {
+      const value = pageParameters.get(parameter);
+      if (value) checkoutUrl.searchParams.set(parameter, value);
+    });
+    return checkoutUrl.toString();
+  }
 
   function currentLanguage() {
     return document.documentElement.lang.toLowerCase().startsWith("sv") ? "sv" : "en";
@@ -224,6 +242,12 @@
     const triggers = [...document.querySelectorAll("[data-shopify-checkout]")];
     if (!triggers.length) return;
 
+    triggers.forEach((trigger) => {
+      const url = checkoutUrlWithCampaignParameters(trigger.dataset.checkoutUrl || trigger.href);
+      trigger.href = url;
+      trigger.dataset.checkoutUrl = url;
+    });
+
     const overlay = document.createElement("div");
     overlay.className = "checkout-overlay";
     overlay.hidden = true;
@@ -317,7 +341,7 @@
 
     triggers.forEach((trigger) => {
       trigger.addEventListener("click", (event) => {
-        const url = trigger.dataset.checkoutUrl || trigger.href;
+        const url = checkoutUrlWithCampaignParameters(trigger.dataset.checkoutUrl || trigger.href);
         if (!url || event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         beginCheckout(url, trigger);
