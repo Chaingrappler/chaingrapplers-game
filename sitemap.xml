@@ -59,4 +59,17 @@
     <lastmod>2026-06-24</lastmod>
     <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/bjj-kortspel.html" />
     <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/bjj-card-game.html" />
-  </url></urlset>
+  </url>
+  <url>
+    <loc>https://chaingrapplers.com/buy.html</loc>
+    <lastmod>2026-10-05</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/buy.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/buy.html" />
+  </url>
+  <url>
+    <loc>https://chaingrapplers.com/en/buy.html</loc>
+    <lastmod>2026-10-05</lastmod>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://chaingrapplers.com/buy.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://chaingrapplers.com/en/buy.html" />
+  </url>
+</urlset>

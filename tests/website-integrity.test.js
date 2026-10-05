@@ -53,22 +53,27 @@ test("all local HTML links, scripts, styles and images exist", () => {
   assert.deepEqual(missing, []);
 });
 
-test("every public page links to the Shopify checkout", () => {
-  const checkoutUrl =
-    "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
-
+test("every public page leads to the email enquiry", () => {
   for (const htmlFile of [
     "index.html",
     "game.html",
     "about.html",
     "rules.html",
+    "buy.html",
+    "bjj-kortspel.html",
     path.join("en", "index.html"),
     path.join("en", "game.html"),
     path.join("en", "about.html"),
-    path.join("en", "rules.html")
+    path.join("en", "rules.html"),
+    path.join("en", "buy.html"),
+    path.join("en", "bjj-card-game.html")
   ]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
-    assert.match(html, new RegExp(checkoutUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(html, /href="buy\.html"/, htmlFile);
+  }
+  for (const htmlFile of ["buy.html", path.join("en", "buy.html")]) {
+    const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
+    assert.match(html, /mailto:admin@chaingrapplers\.com/, htmlFile);
   }
 });
 
@@ -175,7 +180,7 @@ test("every public page uses the shared full-height menu", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     const scriptPath = htmlFile.includes(`${path.sep}en${path.sep}`) ? "../site.js" : "site.js";
-    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20260824c["']`), path.relative(root, htmlFile));
+    assert.match(html, new RegExp(`<script src=["']${scriptPath.replace(".", "\\.")}\\?v=20261005a["']`), path.relative(root, htmlFile));
   }
 
   const menuScript = fs.readFileSync(path.join(root, "site.js"), "utf8");
@@ -191,21 +196,19 @@ test("every page uses the current shared CSS cache key", () => {
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     assert.match(html, /styles\.css\?v=20260824b/, path.relative(root, htmlFile));
-    assert.match(html, /site\.js\?v=20260824c/, path.relative(root, htmlFile));
+    assert.match(html, /site\.js\?v=20261005a/, path.relative(root, htmlFile));
   }
 });
 
-test("product landing pages use the live Shopify product and checkout cart permalink", () => {
-  const cartUrl = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
+test("product landing pages lead to a quotation enquiry", () => {
   const productImage = "chaingrapplers-product-hero-v2.png";
 
   for (const htmlFile of ["index.html", path.join("en", "index.html")]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
     assert.match(html, /class="product-hero(?:\s[^"]*)?"/);
-    assert.match(html, /data-shopify-checkout/);
-    assert.ok(html.includes(cartUrl), `${htmlFile} is missing the live cart permalink`);
+    assert.match(html, /href="buy\.html"/);
     assert.ok(html.includes(productImage), `${htmlFile} is missing the live product image`);
-    assert.match(html, /299 (?:kr|SEK)/);
+    assert.doesNotMatch(html, /299 (?:kr|SEK)/);
     assert.match(html, /class="product-action-title"/);
     assert.match(html, /product-action-title__green/);
     assert.match(html, /product-action-title__yellow/);
@@ -287,19 +290,13 @@ test("English discovery page keeps visitors on English routes", () => {
   assert.doesNotMatch(nav, /href="\.\.\/(?:game|about|rules)\.html"/);
 });
 
-test("Shopify checkout uses a secure popup overlay with a navigation fallback", () => {
+test("the site no longer offers Shopify checkout", () => {
   const script = fs.readFileSync(path.join(root, "site.js"), "utf8");
-  assert.match(script, /CAMPAIGN_PARAMETERS/);
-  assert.match(script, /checkoutUrlWithCampaignParameters/);
-  assert.match(script, /searchParams\.delete\("checkout"\)/);
-  assert.match(script, /checkoutUrl\.search = `\?checkout/);
-  assert.match(script, /utm_source/);
-  assert.match(script, /utm_content/);
-  assert.match(script, /window\.open\(url, "chaingrapplers-shopify-checkout"/);
-  assert.match(script, /window\.location\.assign\(url\)/);
-  assert.match(script, /setBackgroundInert\(true\)/);
-  assert.match(script, /returnFocus instanceof HTMLElement/);
-  assert.doesNotMatch(script, /createElement\(["']iframe["']\)/i);
+  assert.doesNotMatch(script, /shopify|checkout/i);
+  for (const htmlFile of htmlFiles) {
+    const html = fs.readFileSync(htmlFile, "utf8");
+    assert.doesNotMatch(html, /shop\.chaingrapplers\.com|data-shopify-checkout|shopify checkout/i, htmlFile);
+  }
 });
 
 test("the browser demo exposes card controls and dialogs to keyboard users", () => {
@@ -331,12 +328,15 @@ test("the browser demo starts automatically while retaining the new-match contro
   }
 });
 
-test("only the start pages retain the contact footer", () => {
+test("start pages retain the contact footer and enquiry pages provide an email link", () => {
   const startPages = ["index.html", path.join("en", "index.html")];
+  const enquiryPages = ["buy.html", path.join("en", "buy.html")];
   for (const htmlFile of htmlFiles) {
     const html = fs.readFileSync(htmlFile, "utf8");
     const relative = path.relative(root, htmlFile);
     if (startPages.includes(relative)) {
+      assert.match(html, /mailto:admin@chaingrapplers\.com/, relative);
+    } else if (enquiryPages.includes(relative)) {
       assert.match(html, /mailto:admin@chaingrapplers\.com/, relative);
     } else {
       assert.doesNotMatch(html, /mailto:admin@chaingrapplers\.com/, relative);
@@ -355,6 +355,6 @@ test("language selection follows the requested route instead of stale browser pr
 
   for (const htmlFile of ["game.html", "about.html", "rules.html", "buy.html", path.join("en", "game.html")]) {
     const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
-    assert.match(html, /i18n\.js\?v=20260824b/, htmlFile);
+    assert.match(html, /i18n\.js\?v=20261005a/, htmlFile);
   }
 });
