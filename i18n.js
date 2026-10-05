@@ -89,13 +89,6 @@
     "Submission escape": "Submission-escape",
     "Submission escape and defensive recovery in Brazilian Jiu-Jitsu": "Submission-escape och defensiv återhämtning i brasiliansk jiu-jitsu",
     "An escape is the defensive answer to a finishing threat. In the game, escaping does more than survive the attack: it pulls the exchange back to a neutral position and keeps the chain alive.": "En escape är det defensiva svaret på ett avslutshot. I spelet gör en escape mer än att överleva attacken: den drar utbytet tillbaka till en neutral position och håller kedjan vid liv.",
-    "Buy ChainGrapplers": "Köp ChainGrapplers",
-    "Bring the pressure to the table.": "Ta spelet till bordet.",
-    "Fast rounds, real submission threats, and constant tactical decisions. Try the browser demo, then get the boxed game through our Shopify store.": "Snabba rundor, verkliga submissionhot och ständiga taktiska beslut. Testa webbdemon och köp sedan det fysiska spelet via vår Shopify-butik.",
-    "Open the Shopify store": "Öppna Shopify-butiken",
-    "Buy Now": "Köp nu",
-    "Shopify Store": "Shopify-butik",
-    "Open the store": "Öppna butiken",
     "ChainGrapplers Rules": "ChainGrapplers regler",
     "Learn the game fast, then check the full rules.": "Lär dig spelet snabbt, läs sedan de fullständiga reglerna.",
     "Start with the short version, then move into the exact chain logic, submission pressure, and special card effects.": "Börja med den korta versionen och gå sedan vidare till exakt kedjelogik, submissionpress och specialkortens effekter.",
@@ -312,13 +305,13 @@
     if (lang === "en") {
       if (onEnglishRoute) return currentPath;
       if (file === "bjj-kortspel.html") return "/en/bjj-card-game.html";
-      if (["game.html", "about.html", "rules.html"].includes(file)) return `/en/${file}`;
+      if (["game.html", "about.html", "rules.html", "buy.html"].includes(file)) return `/en/${file}`;
       return "/en/";
     }
 
     if (!onEnglishRoute) return currentPath;
     if (file === "bjj-card-game.html") return "/bjj-kortspel.html";
-    if (["game.html", "about.html", "rules.html"].includes(file)) return `/${file}`;
+    if (["game.html", "about.html", "rules.html", "buy.html"].includes(file)) return `/${file}`;
     return "/";
   }
 

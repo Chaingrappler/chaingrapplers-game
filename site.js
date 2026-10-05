@@ -3,32 +3,6 @@
 
   const FOCUSABLE =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-  const CHECKOUT_URL = "https://shop.chaingrapplers.com/cart/62506751459658:1?checkout";
-  const CAMPAIGN_PARAMETERS = [
-    "utm_id",
-    "utm_source",
-    "utm_medium",
-    "utm_campaign",
-    "utm_content",
-    "utm_term",
-  ];
-
-  function checkoutUrlWithCampaignParameters(url = CHECKOUT_URL) {
-    const checkoutUrl = new URL(url, window.location.href);
-    const shouldStartCheckout = checkoutUrl.searchParams.has("checkout");
-    checkoutUrl.searchParams.delete("checkout");
-    const pageParameters = new URLSearchParams(window.location.search);
-    CAMPAIGN_PARAMETERS.forEach((parameter) => {
-      const value = pageParameters.get(parameter);
-      if (value) checkoutUrl.searchParams.set(parameter, value);
-    });
-    if (shouldStartCheckout) {
-      const remainingParameters = checkoutUrl.searchParams.toString();
-      checkoutUrl.search = `?checkout${remainingParameters ? `&${remainingParameters}` : ""}`;
-    }
-    return checkoutUrl.toString();
-  }
-
   function currentLanguage() {
     return document.documentElement.lang.toLowerCase().startsWith("sv") ? "sv" : "en";
   }
@@ -39,19 +13,11 @@
           menu: "Meny",
           openMenu: "Öppna menyn",
           closeMenu: "Stäng menyn",
-          checkoutTitle: "Shopify-kassan är öppen",
-          checkoutCopy: "Slutför köpet i det säkra kassafönstret. Den här sidan ligger kvar bakom.",
-          reopen: "Fortsätt till kassan",
-          cancel: "Stäng meddelandet",
         }
       : {
           menu: "Menu",
           openMenu: "Open menu",
           closeMenu: "Close menu",
-          checkoutTitle: "Shopify checkout is open",
-          checkoutCopy: "Complete your order in the secure checkout window. This page stays open behind it.",
-          reopen: "Continue to checkout",
-          cancel: "Dismiss",
       };
   }
 
@@ -68,13 +34,13 @@
     if (lang === "en") {
       if (onEnglishRoute) return currentPath;
       if (file === "bjj-kortspel.html") return "/en/bjj-card-game.html";
-      if (["game.html", "about.html", "rules.html"].includes(file)) return `/en/${file}`;
+      if (["game.html", "about.html", "rules.html", "buy.html"].includes(file)) return `/en/${file}`;
       return "/en/";
     }
 
     if (!onEnglishRoute) return currentPath;
     if (file === "bjj-card-game.html") return "/bjj-kortspel.html";
-    if (["game.html", "about.html", "rules.html"].includes(file)) return `/${file}`;
+    if (["game.html", "about.html", "rules.html", "buy.html"].includes(file)) return `/${file}`;
     return "/";
   }
 
@@ -87,6 +53,7 @@
       { key: "game", href: "game.html", label: "Demo" },
       { key: "about", href: "about.html", label: swedish ? "Om spelet" : "About" },
       { key: "rules", href: "rules.html", label: swedish ? "Regler" : "Rules" },
+      { key: "buy", href: "buy.html", label: swedish ? "Förfrågan" : "Enquire" },
     ];
 
     nav.replaceChildren();
@@ -232,11 +199,11 @@
     document.body.classList.add("support-buy-page");
     const bar = document.createElement("aside");
     bar.className = "mobile-buy-bar mobile-buy-bar--support";
-    bar.setAttribute("aria-label", swedish ? "Köp ChainGrapplers" : "Buy ChainGrapplers");
+    bar.setAttribute("aria-label", swedish ? "Fråga om ChainGrapplers" : "Enquire about ChainGrapplers");
     bar.innerHTML = `
-      <div><strong>ChainGrapplers</strong><span>${swedish ? "299 kr · Fri frakt" : "299 SEK · Free Swedish shipping"}</span></div>
-      <a href="${CHECKOUT_URL}" data-shopify-checkout data-checkout-url="${CHECKOUT_URL}">
-        ${swedish ? "Köp spelet" : "Buy the game"}
+      <div><strong>ChainGrapplers</strong><span>${swedish ? "Pris och tillgänglighet via mejl" : "Price and availability by email"}</span></div>
+      <a href="buy.html">
+        ${swedish ? "Fråga om spelet" : "Enquire about the game"}
       </a>
     `;
     const footer = document.querySelector(".site-footer");
@@ -244,150 +211,8 @@
     else document.body.append(bar);
   }
 
-  function createCheckoutOverlay() {
-    const triggers = [...document.querySelectorAll("[data-shopify-checkout]")];
-    if (!triggers.length) return;
-
-    triggers.forEach((trigger) => {
-      const url = checkoutUrlWithCampaignParameters(trigger.dataset.checkoutUrl || trigger.href);
-      trigger.href = url;
-      trigger.dataset.checkoutUrl = url;
-    });
-
-    const overlay = document.createElement("div");
-    overlay.className = "checkout-overlay";
-    overlay.hidden = true;
-    overlay.innerHTML = `
-      <div class="checkout-overlay__card" role="dialog" aria-modal="true" aria-labelledby="checkout-overlay-title">
-        <div class="checkout-overlay__brand" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-        <p class="checkout-overlay__eyebrow">Shopify</p>
-        <h2 id="checkout-overlay-title"></h2>
-        <p class="checkout-overlay__copy"></p>
-        <div class="checkout-overlay__actions">
-          <button type="button" class="checkout-overlay__reopen"></button>
-          <button type="button" class="checkout-overlay__close"></button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const title = overlay.querySelector("h2");
-    const copy = overlay.querySelector(".checkout-overlay__copy");
-    const reopen = overlay.querySelector(".checkout-overlay__reopen");
-    const close = overlay.querySelector(".checkout-overlay__close");
-    let checkoutWindow = null;
-    let checkoutUrl = "";
-    let returnFocus = null;
-
-    function setBackgroundInert(inert) {
-      [...document.body.children].forEach((element) => {
-        if (element === overlay || element.tagName === "SCRIPT") return;
-        if (inert && !element.hasAttribute("inert")) {
-          element.setAttribute("inert", "");
-          element.dataset.checkoutInert = "true";
-        } else if (!inert && element.dataset.checkoutInert === "true") {
-          element.removeAttribute("inert");
-          delete element.dataset.checkoutInert;
-        }
-      });
-    }
-
-    function updateLabels() {
-      const text = labels();
-      title.textContent = text.checkoutTitle;
-      copy.textContent = text.checkoutCopy;
-      reopen.textContent = text.reopen;
-      close.textContent = text.cancel;
-    }
-
-    function hideOverlay() {
-      overlay.hidden = true;
-      document.body.classList.remove("checkout-is-open");
-      setBackgroundInert(false);
-      if (returnFocus instanceof HTMLElement) returnFocus.focus();
-    }
-
-    function openPopup(url) {
-      const width = Math.min(760, Math.max(420, window.screen.availWidth - 80));
-      const height = Math.min(920, Math.max(620, window.screen.availHeight - 80));
-      const left = Math.max(0, Math.round((window.screen.availWidth - width) / 2));
-      const top = Math.max(0, Math.round((window.screen.availHeight - height) / 2));
-      const features = `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
-      checkoutWindow = window.open(url, "chaingrapplers-shopify-checkout", features);
-      if (!checkoutWindow) return false;
-      checkoutWindow.focus();
-      return true;
-    }
-
-    function beginCheckout(url, trigger) {
-      checkoutUrl = url;
-      returnFocus = trigger.closest(".site-menu-panel")
-        ? document.querySelector(".site-menu-toggle")
-        : trigger;
-      updateLabels();
-      document.dispatchEvent(new CustomEvent("cg-close-menu"));
-
-      if (window.matchMedia("(max-width: 719px)").matches) {
-        window.location.assign(url);
-        return;
-      }
-
-      if (!openPopup(url)) {
-        window.location.assign(url);
-        return;
-      }
-
-      overlay.hidden = false;
-      document.body.classList.add("checkout-is-open");
-      setBackgroundInert(true);
-      window.requestAnimationFrame(() => close.focus());
-    }
-
-    triggers.forEach((trigger) => {
-      trigger.addEventListener("click", (event) => {
-        const url = checkoutUrlWithCampaignParameters(trigger.dataset.checkoutUrl || trigger.href);
-        if (!url || event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        event.preventDefault();
-        beginCheckout(url, trigger);
-      });
-    });
-
-    reopen.addEventListener("click", () => {
-      if (!openPopup(checkoutUrl)) window.location.assign(checkoutUrl);
-    });
-    close.addEventListener("click", hideOverlay);
-    overlay.addEventListener("click", (event) => {
-      if (event.target === overlay) hideOverlay();
-    });
-    document.addEventListener("keydown", (event) => {
-      if (overlay.hidden) return;
-      if (event.key === "Escape") {
-        event.preventDefault();
-        hideOverlay();
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusable = [...overlay.querySelectorAll(FOCUSABLE)].filter((element) => !element.hidden);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    });
-    window.addEventListener("cg-language-change", updateLabels);
-    updateLabels();
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     createMenu();
     createSupportBuyBar();
-    createCheckoutOverlay();
   });
 })();
